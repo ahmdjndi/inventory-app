@@ -1,0 +1,196 @@
+<div class="location-page">
+
+  <header class="location-page__header">
+    <div class="location-page__head-left">
+      <span class="location-page__head-icon">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg>
+      </span>
+      <div>
+        <h1 class="location-page__title">Daftar Lokasi</h1>
+        <p class="location-page__subtitle">Kelola lokasi penyimpanan barang inventaris.</p>
+      </div>
+    </div>
+    <a routerLink="/locations/create" class="location-page__add">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus" /></svg>
+      Tambah Lokasi
+    </a>
+  </header>
+
+  <!-- Kartu statistik -->
+  <div class="location-stats">
+    @for (c of summary(); track c.label) {
+      <div class="location-stat">
+        <span class="location-stat__icon" [class]="'location-stat__icon tone-' + c.tone">
+          <svg viewBox="0 0 24 24"><path [attr.d]="c.icon" /></svg>
+        </span>
+        <div class="location-stat__body">
+          <span class="location-stat__label">{{ c.label }}</span>
+          <strong class="location-stat__value">{{ c.value }}</strong>
+          <small class="location-stat__desc">{{ c.desc }}</small>
+        </div>
+      </div>
+    }
+  </div>
+
+  <section class="location-card" aria-label="Daftar lokasi inventaris">
+    <!-- Toolbar -->
+    <div class="location-toolbar">
+      <div class="location-toolbar__search">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        <input
+          type="search"
+          placeholder="Cari nama atau deskripsi lokasi..."
+          aria-label="Cari lokasi"
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+          class="location-toolbar__search-input"
+        />
+      </div>
+      <button type="button" class="location-toolbar__reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+        Reset
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="location-skeleton" aria-label="Memuat daftar lokasi">
+        @for (slot of skeletonSlots; track slot) {
+          <div class="location-skeleton__row"></div>
+        }
+      </div>
+    } @else if (errorMessage()) {
+      <div class="location-state">
+        <span class="location-state__icon location-state__icon--error" aria-hidden="true">!</span>
+        <h2>Lokasi belum dapat dimuat</h2>
+        <p>{{ errorMessage() }}</p>
+        <button type="button" class="location-btn" (click)="reloadLocations()">Coba Lagi</button>
+      </div>
+    } @else if (locations().length === 0) {
+      <div class="location-state">
+        <span class="location-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg>
+        </span>
+        <h2>Belum ada lokasi</h2>
+        <p>Tambahkan lokasi pertama untuk mulai mengatur penyimpanan barang.</p>
+        <a routerLink="/locations/create" class="location-btn location-btn--primary">Tambah Lokasi</a>
+      </div>
+    } @else if (filteredLocations().length === 0) {
+      <div class="location-state">
+        <span class="location-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        </span>
+        <h2>Lokasi tidak ditemukan</h2>
+        <p>Coba kata kunci lain untuk mencari lokasi.</p>
+        <button type="button" class="location-btn" (click)="resetFilters()">Hapus Pencarian</button>
+      </div>
+    } @else {
+      <!-- Tabel (desktop) -->
+      <div class="location-table-wrap">
+        <table class="location-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Nama Lokasi</th>
+              <th>Deskripsi</th>
+              <th>Jumlah Barang</th>
+              <th class="location-table__head--center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (location of pagedLocations(); track location.id; let i = $index) {
+              <tr>
+                <td class="location-table__muted">{{ rangeFrom() + i }}</td>
+                <td>
+                  <div class="location-table__name">
+                    <span class="location-table__pin" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg>
+                    </span>
+                    {{ location.name }}
+                  </div>
+                </td>
+                <td class="location-table__desc">{{ location.description || '—' }}</td>
+                <td>
+                  <span class="location-table__count" [class.location-table__count--active]="location.item_count > 0">
+                    {{ location.item_count }} barang
+                  </span>
+                </td>
+                <td>
+                  <div class="location-table__actions">
+                    <a
+                      [routerLink]="['/locations', location.id, 'edit']"
+                      class="location-table__action location-table__action--edit"
+                      [attr.aria-label]="'Ubah ' + location.name"
+                      title="Ubah lokasi"
+                    >
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.edit" /></svg>
+                    </a>
+                    <button
+                      type="button"
+                      (click)="onDelete(location)"
+                      class="location-table__action location-table__action--delete"
+                      [attr.aria-label]="'Hapus ' + location.name"
+                      title="Hapus lokasi"
+                    >
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.trash" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Kartu (layar HP) -->
+      <div class="location-mobile-list">
+        @for (location of pagedLocations(); track location.id) {
+          <article class="location-mobile-card">
+            <div class="location-mobile-card__top">
+              <div class="location-table__name">
+                <span class="location-table__pin" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg>
+                </span>
+                {{ location.name }}
+              </div>
+              <span class="location-table__count" [class.location-table__count--active]="location.item_count > 0">
+                {{ location.item_count }} barang
+              </span>
+            </div>
+            <p class="location-mobile-card__desc">{{ location.description || 'Tidak ada deskripsi' }}</p>
+            <div class="location-mobile-card__actions">
+              <a [routerLink]="['/locations', location.id, 'edit']" class="location-btn">Ubah</a>
+              <button type="button" (click)="onDelete(location)" class="location-btn location-btn--danger">Hapus</button>
+            </div>
+          </article>
+        }
+      </div>
+
+      <!-- Footer: info + pagination -->
+      <div class="location-footer">
+        <span class="location-footer__info">
+          Menampilkan {{ rangeFrom() }} - {{ rangeTo() }} dari {{ filteredLocations().length }} lokasi
+        </span>
+
+        <nav class="location-pager" aria-label="Halaman">
+          <button type="button" class="location-pager__btn" [disabled]="page() === 1" (click)="goTo(page() - 1)" aria-label="Sebelumnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+          </button>
+
+          @for (t of pageTokens(); track $index) {
+            @if (t === '…') {
+              <span class="location-pager__dots">…</span>
+            } @else {
+              <button type="button" class="location-pager__btn" [class.is-active]="t === page()" (click)="goTo(t)">
+                {{ t }}
+              </button>
+            }
+          }
+
+          <button type="button" class="location-pager__btn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)" aria-label="Berikutnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+          </button>
+        </nav>
+      </div>
+    }
+  </section>
+</div>

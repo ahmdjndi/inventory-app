@@ -1,0 +1,695 @@
+<div class="req-page">
+
+  <!-- Pita judul -->
+  <section class="req-hero">
+    <div class="req-container">
+      <h1>Ajukan Peminjaman Barang</h1>
+      <p>Lengkapi data berikut untuk mengajukan peminjaman barang inventaris.</p>
+    </div>
+  </section>
+
+  <div class="req-container">
+
+    <!-- Stepper -->
+    <ol class="req-steps" aria-label="Tahapan pengajuan">
+      @for (s of steps; track s; let i = $index) {
+        <li
+          class="req-step"
+          [class.is-done]="currentStep() > i + 1"
+          [class.is-current]="currentStep() === i + 1"
+        >
+          <span class="req-step__dot">
+            @if (currentStep() > i + 1) {
+              <svg viewBox="0 0 24 24">
+                <path [attr.d]="icons.check" />
+              </svg>
+            } @else {
+              {{ i + 1 }}
+            }
+          </span>
+          <span class="req-step__label">{{ s }}</span>
+        </li>
+      }
+    </ol>
+
+    <!-- ========================================= -->
+    <!-- BUKTI PENGAJUAN PEMINJAMAN -->
+    <!-- ========================================= -->
+    @if (receipt(); as r) {
+
+<div class="max-w-xl mx-auto">
+    <div class="bg-white border border-gray-300 rounded-lg p-8 print:shadow-none">
+      <div class="text-center border-b border-gray-200 pb-4 mb-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide">Sistem Inventaris Barang</p>
+        <h2 class="text-xl font-bold text-gray-800 mt-1">Bukti Pengajuan Peminjaman</h2>
+      </div>
+
+      <div class="flex justify-center mb-6">
+        <span class="text-xs px-3 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">
+          Menunggu Konfirmasi
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="border border-gray-200 rounded-md p-3 text-center">
+          <p class="text-[11px] text-gray-400 uppercase">Kode Transaksi</p>
+          <p class="font-mono font-bold text-gray-800 mt-1">{{ r.transactionCode }}</p>
+        </div>
+        <div class="border border-gray-200 rounded-md p-3 text-center">
+          <p class="text-[11px] text-gray-400 uppercase">Token Akses</p>
+          <p class="font-mono text-sm text-gray-800 mt-1 break-all">{{ r.accessToken }}</p>
+        </div>
+      </div>
+
+      @if (submittedSnapshot(); as s) {
+        <table class="w-full text-sm mb-4">
+          <tbody>
+            <tr class="border-b border-gray-100"><td class="py-1.5 text-gray-500 w-1/3">Nama</td><td class="py-1.5 font-medium">{{ s.borrowerName }}</td></tr>
+            <tr class="border-b border-gray-100"><td class="py-1.5 text-gray-500">NIS</td><td class="py-1.5">{{ s.nis }}</td></tr>
+            <tr class="border-b border-gray-100"><td class="py-1.5 text-gray-500">Kelas/Jurusan</td><td class="py-1.5">{{ s.borrowerClass }}</td></tr>
+            <tr class="border-b border-gray-100"><td class="py-1.5 text-gray-500">Tanggal Pinjam</td><td class="py-1.5">{{ s.plannedBorrowDate }}</td></tr>
+            <tr><td class="py-1.5 text-gray-500">Tanggal Kembali</td><td class="py-1.5">{{ s.plannedReturnDate }}</td></tr>
+          </tbody>
+        </table>
+
+        <table class="w-full text-sm mb-4">
+          <thead>
+            <tr class="border-b border-gray-300 text-left text-gray-500">
+              <th class="py-1.5">Barang</th><th class="py-1.5 text-right">Jumlah</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of s.items; track line.item.id) {
+              <tr class="border-b border-gray-100">
+                <td class="py-1.5">{{ line.item.name }}</td>
+                <td class="py-1.5 text-right">{{ line.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <p class="text-[11px] text-gray-400 text-center border-t border-gray-200 pt-3">
+        Simpan kode transaksi &amp; token akses ini untuk memeriksa status pengajuan di halaman "Cek Status".
+      </p>
+    </div>
+
+    <div class="flex gap-3 mt-4 justify-center print:hidden">
+      <button (click)="onPrint()" class="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 text-sm">
+        Cetak / Simpan sebagai PDF
+      </button>
+      <a routerLink="/" class="text-sm text-gray-500 hover:underline self-center">Kembali ke Beranda</a>
+    </div>
+  </div>
+    } @else if (cartService.lines().length === 0) {
+
+      <!-- ========================================= -->
+      <!-- KERANJANG KOSONG -->
+      <!-- ========================================= -->
+      <section class="req-empty">
+
+        <span class="req-empty__icon">
+          <svg viewBox="0 0 24 24">
+            <path [attr.d]="icons.box" />
+          </svg>
+        </span>
+
+        <h2>Belum ada barang dipilih</h2>
+
+        <p>
+          Pilih barang dari katalog terlebih dahulu, lalu kembali
+          ke sini untuk mengisi data peminjaman.
+        </p>
+
+        <a routerLink="/katalog" class="req-btn req-btn--primary">
+          Jelajahi Daftar Barang
+
+          <svg viewBox="0 0 24 24">
+            <path [attr.d]="icons.arrow" />
+          </svg>
+        </a>
+
+      </section>
+
+    } @else {
+
+      <!-- ========================================= -->
+      <!-- FORMULIR PENGAJUAN -->
+      <!-- ========================================= -->
+      <div class="req-layout">
+
+        <!-- Kolom kiri -->
+        <div class="req-main">
+
+          @if (errorMessage()) {
+            <p class="req-error">
+              <svg viewBox="0 0 24 24">
+                <path [attr.d]="icons.alert" />
+              </svg>
+              {{ errorMessage() }}
+            </p>
+          }
+
+          <!-- Barang yang diajukan -->
+          <section class="req-card">
+
+            <header class="req-card__head">
+              <span class="req-card__icon">
+                <svg viewBox="0 0 24 24">
+                  <path [attr.d]="icons.box" />
+                </svg>
+              </span>
+
+              <div>
+                <h2>Barang yang Diajukan</h2>
+                <p>
+                  {{ totalTypes() }} jenis barang ·
+                  {{ totalUnits() }} unit
+                </p>
+              </div>
+
+              <a routerLink="/katalog" class="req-link">
+                <svg viewBox="0 0 24 24">
+                  <path [attr.d]="icons.plus" />
+                </svg>
+                Tambah barang
+              </a>
+            </header>
+
+            <ul class="req-items">
+              @for (line of cartService.lines(); track line.item.id) {
+                <li class="req-item">
+
+                  <div class="req-item__photo">
+                    @if (line.item.photo_url) {
+                      <img
+                        [src]="line.item.photo_url"
+                        [alt]="line.item.name"
+                      />
+                    } @else {
+                      <svg viewBox="0 0 24 24">
+                        <path [attr.d]="icons.image" />
+                      </svg>
+                    }
+                  </div>
+
+                  <div class="req-item__info">
+                    <strong>{{ line.item.name }}</strong>
+                    <span>{{ line.item.code }}</span>
+                    <small>
+                      Stok tersedia:
+                      {{ line.item.available_stock }}
+                      {{ line.item.unit }}
+                    </small>
+                  </div>
+
+                  <div class="req-qty">
+                    <button
+                      type="button"
+                      (click)="step(line.item.id, line.quantity, line.item.available_stock, -1)"
+                      [disabled]="line.quantity <= 1"
+                      [attr.aria-label]="'Kurangi jumlah ' + line.item.name"
+                    >
+                      <svg viewBox="0 0 24 24">
+                        <path [attr.d]="icons.minus" />
+                      </svg>
+                    </button>
+
+                    <input
+                      type="number"
+                      [value]="line.quantity"
+                      (input)="updateQuantity(line.item.id, $any($event.target).value)"
+                      min="1"
+                      [max]="line.item.available_stock"
+                      [attr.aria-label]="'Jumlah ' + line.item.name"
+                    />
+
+                    <button
+                      type="button"
+                      (click)="step(line.item.id, line.quantity, line.item.available_stock, 1)"
+                      [disabled]="line.quantity >= line.item.available_stock"
+                      [attr.aria-label]="'Tambah jumlah ' + line.item.name"
+                    >
+                      <svg viewBox="0 0 24 24">
+                        <path [attr.d]="icons.plus" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="req-item__remove"
+                    (click)="cartService.remove(line.item.id)"
+                    [attr.aria-label]="'Hapus ' + line.item.name"
+                    title="Hapus"
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.trash" />
+                    </svg>
+                  </button>
+
+                </li>
+              }
+            </ul>
+
+          </section>
+
+          <!-- Form data peminjam -->
+          <form
+            id="loan-form"
+            [formGroup]="form"
+            (ngSubmit)="onSubmit()"
+          >
+
+            <section class="req-card">
+
+              <header class="req-card__head">
+                <span class="req-card__icon">
+                  <svg viewBox="0 0 24 24">
+                    <path [attr.d]="icons.user" />
+                  </svg>
+                </span>
+
+                <div>
+                  <h2>Data Peminjam</h2>
+                  <p>Pastikan data yang diisi sudah benar.</p>
+                </div>
+              </header>
+
+              <div class="req-card__body">
+
+                <!-- Nama -->
+                <div
+                  class="req-field"
+                  [class.is-invalid]="isInvalid('borrowerName')"
+                >
+                  <label for="borrowerName">Nama Lengkap</label>
+
+                  <div class="req-input">
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.user" />
+                    </svg>
+
+                    <input
+                      id="borrowerName"
+                      formControlName="borrowerName"
+                      placeholder="Masukkan nama lengkap"
+                      autocomplete="name"
+                    />
+                  </div>
+
+                  @if (isInvalid('borrowerName')) {
+                    <p class="req-field__error">
+                      Nama wajib diisi.
+                    </p>
+                  }
+                </div>
+
+                <!-- NIS -->
+                <div
+                  class="req-field"
+                  [class.is-invalid]="isInvalid('nis')"
+                >
+                  <label for="nis">NIS</label>
+
+                  <div class="req-input">
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.user" />
+                    </svg>
+
+                    <input
+                      id="nis"
+                      formControlName="nis"
+                      placeholder="Masukkan NIS"
+                      autocomplete="off"
+                    />
+                  </div>
+
+                  @if (isInvalid('nis')) {
+                    <p class="req-field__error">
+                      NIS wajib diisi.
+                    </p>
+                  }
+                </div>
+
+                <!-- Kontak -->
+                <div
+                  class="req-field"
+                  [class.is-invalid]="isInvalid('borrowerContact')"
+                >
+                  <label for="borrowerContact">
+                    Kontak (telepon/email)
+                  </label>
+
+                  <div class="req-input">
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.phone" />
+                    </svg>
+
+                    <input
+                      id="borrowerContact"
+                      formControlName="borrowerContact"
+                      placeholder="Nomor telepon atau email"
+                      autocomplete="off"
+                    />
+                  </div>
+
+                  @if (isInvalid('borrowerContact')) {
+                    <p class="req-field__error">
+                      Kontak wajib diisi.
+                    </p>
+                  }
+                </div>
+
+                <!-- Status dan kelas -->
+                <div class="req-grid-2">
+
+                  <div
+                    class="req-field"
+                    [class.is-invalid]="isInvalid('borrowerStatus')"
+                  >
+                    <span class="req-label">Status</span>
+
+                    <div class="req-status">
+                      <label class="req-status__option">
+                        <input
+                          type="radio"
+                          formControlName="borrowerStatus"
+                          value="guru"
+                        />
+
+                        <span class="req-status__box">
+                          <svg viewBox="0 0 24 24">
+                            <path [attr.d]="icons.teacher" />
+                          </svg>
+                          Guru
+                        </span>
+                      </label>
+
+                      <label class="req-status__option">
+                        <input
+                          type="radio"
+                          formControlName="borrowerStatus"
+                          value="siswa"
+                        />
+
+                        <span class="req-status__box">
+                          <svg viewBox="0 0 24 24">
+                            <path [attr.d]="icons.book" />
+                          </svg>
+                          Siswa
+                        </span>
+                      </label>
+                    </div>
+
+                    @if (isInvalid('borrowerStatus')) {
+                      <p class="req-field__error">
+                        Status wajib dipilih.
+                      </p>
+                    }
+                  </div>
+
+                  <div
+                    class="req-field"
+                    [class.is-invalid]="isInvalid('borrowerClass')"
+                  >
+                    <label for="borrowerClass">
+                      Kelas / Jurusan
+                    </label>
+
+                    <div class="req-input">
+                      <svg viewBox="0 0 24 24">
+                        <path [attr.d]="icons.school" />
+                      </svg>
+
+                      <input
+                        id="borrowerClass"
+                        formControlName="borrowerClass"
+                        placeholder="Contoh: XII DKV 1"
+                        autocomplete="off"
+                      />
+                    </div>
+
+                    @if (isInvalid('borrowerClass')) {
+                      <p class="req-field__error">
+                        Kelas/Jurusan wajib diisi.
+                      </p>
+                    }
+                  </div>
+
+                </div>
+              </div>
+            </section>
+
+            <!-- Jadwal dan keperluan -->
+            <section class="req-card">
+
+              <header class="req-card__head">
+                <span class="req-card__icon">
+                  <svg viewBox="0 0 24 24">
+                    <path [attr.d]="icons.calendar" />
+                  </svg>
+                </span>
+
+                <div>
+                  <h2>Jadwal &amp; Keperluan</h2>
+                  <p>Tentukan tanggal peminjaman dan pengembalian.</p>
+                </div>
+              </header>
+
+              <div class="req-card__body">
+
+                <!-- Tanggal pinjam -->
+                <div
+                  class="req-field"
+                  [class.is-invalid]="isInvalid('plannedBorrowDate')"
+                >
+                  <label for="plannedBorrowDate">
+                    Tanggal Rencana Peminjaman
+                  </label>
+
+                  <div class="req-input">
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.calendar" />
+                    </svg>
+
+                    <input
+                      id="plannedBorrowDate"
+                      type="date"
+                      formControlName="plannedBorrowDate"
+                      [min]="todayString"
+                    />
+                  </div>
+
+                  @if (isInvalid('plannedBorrowDate')) {
+                    <p class="req-field__error">
+                      Tanggal peminjaman wajib diisi.
+                    </p>
+                  }
+
+                  @if (
+                    form.controls.plannedBorrowDate.touched &&
+                    form.controls.plannedBorrowDate.hasError('pastDate')
+                  ) {
+                    <p class="req-field__error">
+                      Tanggal peminjaman tidak boleh di masa lalu.
+                    </p>
+                  }
+                </div>
+
+                <!-- Tanggal kembali -->
+                <div
+                  class="req-field"
+                  [class.is-invalid]="isInvalid('plannedReturnDate')"
+                >
+                  <label for="plannedReturnDate">
+                    Tanggal Rencana Kembali
+                  </label>
+
+                  <div class="req-input">
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.calendar" />
+                    </svg>
+
+                    <input
+                      id="plannedReturnDate"
+                      type="date"
+                      formControlName="plannedReturnDate"
+                      [min]="form.controls.plannedBorrowDate.value || todayString"
+                    />
+                  </div>
+
+                  @if (isInvalid('plannedReturnDate')) {
+                    <p class="req-field__error">
+                      Tanggal kembali wajib diisi.
+                    </p>
+                  }
+                </div>
+
+                <!-- Validasi rentang tanggal -->
+                @if (form.touched && form.hasError('returnBeforeBorrow')) {
+                  <p class="req-field__error">
+                    Tanggal kembali tidak boleh sebelum tanggal pinjam.
+                  </p>
+                }
+
+                <!-- Keperluan -->
+                <div
+                  class="req-field"
+                  [class.is-invalid]="isInvalid('purpose')"
+                >
+                  <label for="purpose">
+                    Keperluan Peminjaman
+                  </label>
+
+                  <div class="req-input req-input--area">
+                    <svg viewBox="0 0 24 24">
+                      <path [attr.d]="icons.doc" />
+                    </svg>
+
+                    <textarea
+                      id="purpose"
+                      formControlName="purpose"
+                      rows="4"
+                      placeholder="Jelaskan untuk apa barang akan digunakan"
+                    ></textarea>
+                  </div>
+
+                  @if (isInvalid('purpose')) {
+                    <p class="req-field__error">
+                      Keperluan wajib diisi.
+                    </p>
+                  }
+                </div>
+
+              </div>
+            </section>
+
+          </form>
+        </div>
+
+        <!-- ========================================= -->
+        <!-- KOLOM KANAN: RINGKASAN -->
+        <!-- ========================================= -->
+        <aside class="req-side">
+
+          <div class="req-summary">
+
+            <h2>
+              <svg viewBox="0 0 24 24">
+                <path [attr.d]="icons.clipboard" />
+              </svg>
+              Ringkasan Peminjaman
+            </h2>
+
+            <ul class="req-summary__list">
+              @for (line of cartService.lines(); track line.item.id) {
+                <li>
+                  <span>{{ line.item.name }}</span>
+                  <b>× {{ line.quantity }}</b>
+                </li>
+              }
+            </ul>
+
+            <dl class="req-summary__rows">
+              <div>
+                <dt>Jenis barang</dt>
+                <dd>{{ totalTypes() }}</dd>
+              </div>
+
+              <div>
+                <dt>Total unit</dt>
+                <dd>{{ totalUnits() }}</dd>
+              </div>
+
+              <div>
+                <dt>Peminjam</dt>
+                <dd>
+                  {{ form.controls.borrowerName.value || '—' }}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Tanggal pinjam</dt>
+                <dd>
+                  {{ form.controls.plannedBorrowDate.value || '—' }}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Rencana kembali</dt>
+                <dd>
+                  {{ plannedDateLabel() ?? '—' }}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Lama pinjam</dt>
+                <dd>
+                  {{ durationLabel() ?? '—' }}
+                </dd>
+              </div>
+            </dl>
+
+            <button
+              type="submit"
+              form="loan-form"
+              class="req-submit"
+              [disabled]="isSubmitting()"
+            >
+              @if (isSubmitting()) {
+                <span class="req-spinner" aria-hidden="true"></span>
+                Mengirim...
+              } @else {
+                Ajukan Peminjaman
+
+                <svg viewBox="0 0 24 24">
+                  <path [attr.d]="icons.arrow" />
+                </svg>
+              }
+            </button>
+
+            <p class="req-summary__note">
+              Pengajuan akan berstatus "Menunggu Konfirmasi".
+              Barang baru dapat dipinjam setelah mendapat persetujuan
+              dari petugas.
+            </p>
+
+          </div>
+
+          <!-- Ketentuan peminjaman -->
+          <div class="req-terms">
+
+            <h3>
+              <svg viewBox="0 0 24 24">
+                <path [attr.d]="icons.shield" />
+              </svg>
+              Ketentuan Peminjaman
+            </h3>
+
+            <ul>
+              <li>
+                Barang hanya boleh digunakan sesuai keperluan yang diajukan.
+              </li>
+
+              <li>
+                Barang wajib dikembalikan sesuai tanggal yang telah ditentukan.
+              </li>
+
+              <li>
+                Kerusakan atau kehilangan barang menjadi tanggung jawab peminjam.
+              </li>
+
+              <li>
+                Simpan kode transaksi dan token akses untuk mengecek
+                status pengajuan.
+              </li>
+            </ul>
+
+          </div>
+
+        </aside>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,157 @@
+<main class="catalog-page">
+  <div class="catalog-container">
+
+    <header class="catalog-heading">
+      <span class="catalog-kicker">KATALOG INVENTARIS</span>
+      <h1>Daftar <span class="catalog-accent">Barang</span></h1>
+      <p>Temukan dan lihat informasi barang inventaris yang tersedia dalam sistem.</p>
+    </header>
+
+    <!-- Toolbar -->
+    <section class="catalog-toolbar" aria-label="Pencarian dan filter barang">
+      <label class="catalog-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons.search" /></svg>
+        <input
+          type="search"
+          placeholder="Cari barang, kode, atau kategori..."
+          aria-label="Cari barang"
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+        />
+        @if (searchTerm()) {
+          <button type="button" class="catalog-search__clear" aria-label="Hapus pencarian" (click)="onSearch('')">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.close" /></svg>
+          </button>
+        }
+      </label>
+
+      <select class="catalog-select" aria-label="Filter kategori" (change)="onCategory($any($event.target).value)">
+        <option value="" [selected]="!categoryFilter()">Semua Kategori</option>
+        @for (category of categoryOptions(); track category) {
+          <option [value]="category" [selected]="categoryFilter() === category">{{ category }}</option>
+        }
+      </select>
+
+      <select class="catalog-select" aria-label="Filter status" (change)="onStatus($any($event.target).value)">
+        <option value="" [selected]="!statusFilter()">Semua Status</option>
+        <option value="available" [selected]="statusFilter() === 'available'">Tersedia</option>
+        <option value="empty" [selected]="statusFilter() === 'empty'">Stok Habis</option>
+      </select>
+
+      <select class="catalog-select" aria-label="Urutkan barang" (change)="onSort($any($event.target).value)">
+        <option value="newest" [selected]="sortOrder() === 'newest'">Urutan Bawaan</option>
+        <option value="name-asc" [selected]="sortOrder() === 'name-asc'">Nama A–Z</option>
+        <option value="name-desc" [selected]="sortOrder() === 'name-desc'">Nama Z–A</option>
+      </select>
+
+      <button type="button" class="catalog-reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+        Reset
+      </button>
+    </section>
+
+    @if (errorMessage()) {
+      <p class="catalog-error">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.alert" /></svg>
+        {{ errorMessage() }}
+      </p>
+    }
+
+    @if (isLoading()) {
+      <div class="catalog-results" aria-label="Memuat katalog">
+        @for (skeleton of skeletonCards; track skeleton) {
+          <div class="catalog-skeleton"><div></div><span></span><i></i></div>
+        }
+      </div>
+    } @else if (items().length === 0) {
+      <div class="catalog-state">
+        <span class="catalog-state__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.image" /></svg></span>
+        <h2>Belum Ada Barang</h2>
+        <p>Barang inventaris akan tampil di sini setelah ditambahkan oleh admin.</p>
+      </div>
+    } @else if (filteredItems().length === 0) {
+      <div class="catalog-state">
+        <span class="catalog-state__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg></span>
+        <h2>Barang Tidak Ditemukan</h2>
+        <p>Coba ubah kata kunci atau filter yang dipilih.</p>
+        <button type="button" class="catalog-btn" (click)="resetFilters()">Reset Filter</button>
+      </div>
+    } @else {
+      <p class="catalog-result-info">
+        Menampilkan <strong>{{ rangeFrom() }}–{{ rangeTo() }}</strong> dari <strong>{{ filteredItems().length }}</strong> barang
+      </p>
+
+      <div class="catalog-results">
+        @for (item of pagedItems(); track item.id) {
+          <article class="catalog-item">
+            <a [routerLink]="['/katalog', item.id]" class="catalog-item__image" [attr.aria-label]="'Lihat detail ' + item.name">
+              @if (item.photo_url) {
+                <img [src]="item.photo_url" [alt]="item.name" loading="lazy" />
+              } @else {
+                <span class="catalog-item__placeholder">
+                  <svg viewBox="0 0 24 24"><path [attr.d]="icons.image" /></svg>
+                  Gambar belum tersedia
+                </span>
+              }
+              <span class="catalog-item__category">{{ item.category_name ?? 'Umum' }}</span>
+              <span class="catalog-item__status" [class.is-empty]="item.available_stock <= 0">
+                {{ item.available_stock > 0 ? 'Tersedia' : 'Stok habis' }}
+              </span>
+            </a>
+
+            <div class="catalog-item__body">
+              <div class="catalog-item__title">
+                <a [routerLink]="['/katalog', item.id]">{{ item.name }}</a>
+                <span>{{ item.code }}</span>
+              </div>
+
+              <div class="catalog-item__stock">
+                <span>Stok tersedia</span>
+                @if (item.available_stock > 0) {
+                  <b>{{ item.available_stock }} {{ item.unit }}</b>
+                } @else {
+                  <b class="is-empty">Habis</b>
+                }
+              </div>
+
+              <div class="catalog-item__actions">
+                <a [routerLink]="['/katalog', item.id]" class="catalog-btn catalog-btn--soft">Lihat Detail</a>
+                <button
+                  type="button"
+                  class="catalog-btn catalog-btn--primary"
+                  [disabled]="item.available_stock <= 0"
+                  (click)="onBorrowClick(item)"
+                  [attr.aria-label]="'Pinjam ' + item.name"
+                >
+                  <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus" /></svg>
+                  Pinjam
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <nav class="catalog-pager" aria-label="Halaman">
+          <button type="button" class="catalog-pager__btn" [disabled]="page() === 1" (click)="goTo(page() - 1)" aria-label="Sebelumnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+          </button>
+
+          @for (t of pageTokens(); track $index) {
+            @if (t === '…') {
+              <span class="catalog-pager__dots">…</span>
+            } @else {
+              <button type="button" class="catalog-pager__btn" [class.is-active]="t === page()" (click)="goTo(t)">{{ t }}</button>
+            }
+          }
+
+          <button type="button" class="catalog-pager__btn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)" aria-label="Berikutnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+          </button>
+        </nav>
+      }
+    }
+  </div>
+</main>

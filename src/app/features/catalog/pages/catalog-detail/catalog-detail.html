@@ -1,0 +1,40 @@
+@if (errorMessage()) {
+  <p class="text-sm text-red-600 mb-4">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="text-gray-500">Memuat data...</p>
+} @else if (notFound()) {
+  <p class="text-gray-400">Data tidak ditemukan.</p>
+} @else if (item(); as it) {
+  <div class="bg-white rounded-lg shadow-sm p-6 max-w-xl">
+    @if (it.photo_url) {
+      <img [src]="it.photo_url" [alt]="it.name" class="w-full h-56 object-cover rounded-md mb-4" />
+    }
+    <h1 class="text-xl font-semibold text-gray-800">{{ it.name }}</h1>
+    <p class="text-sm text-gray-400 mb-4">{{ it.code }} &middot; {{ it.category_name ?? '-' }} &middot; {{ it.location_name ?? '-' }}</p>
+
+    <p class="text-sm text-gray-600 mb-4">{{ it.description ?? 'Tidak ada deskripsi.' }}</p>
+
+    <p class="text-sm mb-4">
+      @if (it.available_stock > 0) {
+        <span class="text-blue-600">Tersedia: {{ it.available_stock }} {{ it.unit }}</span>
+      } @else {
+        <span class="text-red-500">Stok habis</span>
+      }
+    </p>
+
+    @if (it.available_stock > 0) {
+      <div class="flex items-center gap-3">
+        <input type="number" [value]="quantity()" (input)="quantity.set(+$any($event.target).value)"
+               min="1" [max]="it.available_stock"
+               class="w-20 border border-gray-300 rounded-md px-2 py-1" />
+        <button (click)="onBorrowClick()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+          Pinjam Barang
+        </button>
+      </div>
+    }
+
+    <a routerLink="/katalog" class="inline-block mt-6 text-sm text-gray-500 hover:underline">&larr; Kembali ke Daftar Barang</a>
+  </div>
+}

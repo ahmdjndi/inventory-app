@@ -1,0 +1,302 @@
+<div class="tx-page">
+
+  <header class="tx-header">
+    <span class="tx-header__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.history" /></svg></span>
+    <div>
+      <h1 class="tx-header__title">Riwayat Transaksi</h1>
+      <p class="tx-header__subtitle">Aktivitas keluar-masuk barang, peminjaman, dan laporan stok.</p>
+    </div>
+  </header>
+
+  <!-- Tab utama -->
+  <div class="tx-tabs" role="tablist" aria-label="Pilih tampilan">
+    <button type="button" role="tab" class="tx-tab" [class.is-active]="mainTab() === 'riwayat'" [attr.aria-selected]="mainTab() === 'riwayat'" (click)="setMainTab('riwayat')">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.history" /></svg>
+      Riwayat Transaksi
+    </button>
+    <button type="button" role="tab" class="tx-tab" [class.is-active]="mainTab() === 'stok'" [attr.aria-selected]="mainTab() === 'stok'" (click)="setMainTab('stok')">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.stock" /></svg>
+      Laporan Stok Saat Ini
+    </button>
+  </div>
+
+  @if (mainTab() === 'riwayat') {
+
+    <!-- Kartu statistik -->
+    <div class="tx-stats">
+      @for (c of summary(); track c.label) {
+        <div class="tx-stat">
+          <span class="tx-stat__icon" [class]="'tx-stat__icon tone-' + c.tone">
+            <svg viewBox="0 0 24 24"><path [attr.d]="c.icon" /></svg>
+          </span>
+          <div class="tx-stat__body">
+            <span class="tx-stat__label">{{ c.label }}</span>
+            <strong class="tx-stat__value">{{ c.value }}</strong>
+            <small class="tx-stat__desc">{{ c.desc }}</small>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="tx-card">
+      <!-- Periode -->
+      <div class="tx-controls">
+        <div class="tx-pills" role="group" aria-label="Periode">
+          @for (p of presets; track p.key) {
+            <button type="button" class="tx-pill" [class.is-active]="activePreset() === p.key" (click)="setPreset(p.key)">{{ p.label }}</button>
+          }
+        </div>
+
+        <div class="tx-range" [class.is-custom]="activePreset() === 'kustom'">
+          <label class="tx-range__field">
+            <span>Dari</span>
+            <input type="date" [value]="customFrom()" (change)="customFrom.set($any($event.target).value)" />
+          </label>
+          <span class="tx-range__sep">s/d</span>
+          <label class="tx-range__field">
+            <span>Sampai</span>
+            <input type="date" [value]="customTo()" (change)="customTo.set($any($event.target).value)" />
+          </label>
+          <button type="button" class="tx-apply" (click)="applyCustomRange()">Terapkan</button>
+        </div>
+      </div>
+
+      <!-- Jenis aktivitas + ekspor -->
+      <div class="tx-controls tx-controls--split">
+        <div class="tx-pills" role="group" aria-label="Jenis aktivitas">
+          @for (group of availableFilterGroups(); track group.id) {
+            <button type="button" class="tx-pill" [class.is-active]="activeFilter() === group.id" (click)="setFilterGroup(group.id)">{{ group.label }}</button>
+          }
+        </div>
+
+        <div class="tx-export">
+          <button type="button" class="tx-export__btn tx-export__btn--excel" (click)="exportActivityExcel()" [disabled]="filteredActivities().length === 0">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.file" /></svg>
+            Ekspor Excel
+          </button>
+          <button type="button" class="tx-export__btn tx-export__btn--pdf" (click)="exportActivityPdf()" [disabled]="filteredActivities().length === 0">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.file" /></svg>
+            Ekspor PDF
+          </button>
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="tx-error">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.alert" /></svg>
+          <span>{{ errorMessage() }}</span>
+          <button type="button" (click)="retryActivities()">Coba Lagi</button>
+        </p>
+      }
+
+      @if (isLoading()) {
+        <div class="tx-skeleton">
+          @for (row of skeletonRows; track row) { <div class="tx-skeleton__row"></div> }
+        </div>
+      } @else if (filteredActivities().length === 0) {
+        <div class="tx-empty">
+          <span class="tx-empty__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.history" /></svg></span>
+          <p>Tidak ada aktivitas pada periode atau filter ini.</p>
+        </div>
+      } @else {
+        <p class="tx-info">
+          {{ filteredActivities().length }} aktivitas ditemukan ·
+          {{ appliedRange().from | date: 'dd MMM yyyy' }} – {{ appliedRange().to | date: 'dd MMM yyyy' }}
+        </p>
+
+        <ul class="tx-list">
+          @for (activity of pagedActivities(); track activity.activity_id) {
+            <li class="tx-item">
+              <span class="tx-item__icon" [class]="'tx-item__icon ' + activityTone(activity.activity_type)">
+                <svg viewBox="0 0 24 24"><path [attr.d]="activityIcon(activity.activity_type)" /></svg>
+              </span>
+
+              <div class="tx-item__body">
+                <div class="tx-item__top">
+                  <span class="tx-badge" [class]="'tx-badge ' + activityTone(activity.activity_type)">{{ activityLabel(activity.activity_type) }}</span>
+                  <span class="tx-item__date">{{ activity.activity_date | date: 'dd MMM yyyy, HH:mm' }}</span>
+                </div>
+
+                <p class="tx-item__desc">
+                  @if (activity.borrower_name) { <strong>{{ activity.borrower_name }}</strong> }
+                  @if (activity.item_name) { {{ activity.item_name }} ({{ activity.item_code }}) }
+                  @if (activity.quantity) { <b class="tx-item__qty">×{{ activity.quantity }}</b> }
+                </p>
+
+                @if (activity.notes) {
+                  <p class="tx-item__notes">{{ activity.notes }}</p>
+                }
+
+                @if (activity.condition) {
+                  <p class="tx-item__meta">
+                    Kondisi: {{ activity.condition }}
+                    @if (activity.complete !== null) {
+                      · {{ activity.complete ? 'Lengkap' : 'Tidak lengkap' }}
+                    }
+                    @if (activity.is_late) { · <span class="tx-late">Terlambat</span> }
+                  </p>
+                }
+
+                @if (activity.actor_name) {
+                  <p class="tx-item__meta">oleh {{ activity.actor_name }}</p>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        <!-- Footer: info + pagination -->
+        <div class="tx-footer">
+          <span class="tx-footer__info">Menampilkan {{ rangeFrom() }} - {{ rangeTo() }} dari {{ filteredActivities().length }} aktivitas</span>
+
+          @if (totalPages() > 1) {
+            <nav class="tx-pager" aria-label="Halaman">
+              <button type="button" class="tx-pager__btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)" aria-label="Sebelumnya">
+                <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+              </button>
+              @for (t of pageTokens(); track $index) {
+                @if (t === '…') {
+                  <span class="tx-pager__dots">…</span>
+                } @else {
+                  <button type="button" class="tx-pager__btn" [class.is-active]="t === page()" (click)="goToPage(t)">{{ t }}</button>
+                }
+              }
+              <button type="button" class="tx-pager__btn" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)" aria-label="Berikutnya">
+                <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+              </button>
+            </nav>
+          }
+        </div>
+      }
+    </div>
+
+  } @else {
+
+    <!-- ===== Tab laporan stok ===== -->
+    <div class="tx-stats">
+      @for (c of stockSummary(); track c.label) {
+        <div class="tx-stat">
+          <span class="tx-stat__icon" [class]="'tx-stat__icon tone-' + c.tone">
+            <svg viewBox="0 0 24 24"><path [attr.d]="c.icon" /></svg>
+          </span>
+          <div class="tx-stat__body">
+            <span class="tx-stat__label">{{ c.label }}</span>
+            <strong class="tx-stat__value">{{ c.value }}</strong>
+            <small class="tx-stat__desc">{{ c.desc }}</small>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="tx-card">
+      <div class="tx-controls tx-controls--split">
+        <div class="tx-stockbar">
+          <div class="tx-search">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+            <input
+              type="search"
+              placeholder="Cari kode, nama, kategori, atau lokasi..."
+              aria-label="Cari barang"
+              [value]="stockSearch()"
+              (input)="onStockSearch($any($event.target).value)"
+            />
+          </div>
+          <select class="tx-select" aria-label="Filter status" (change)="onStockStatus($any($event.target).value)">
+            <option value="" [selected]="!stockStatus()">Semua Status</option>
+            @for (s of stockStatuses; track s) {
+              <option [value]="s" [selected]="stockStatus() === s">{{ s }}</option>
+            }
+          </select>
+          <button type="button" class="tx-reset" (click)="resetStockFilters()">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+            Reset
+          </button>
+        </div>
+
+        <div class="tx-export">
+          <button type="button" class="tx-export__btn tx-export__btn--excel" (click)="exportStockExcel()" [disabled]="filteredStock().length === 0">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.file" /></svg>
+            Ekspor Excel
+          </button>
+          <button type="button" class="tx-export__btn tx-export__btn--pdf" (click)="exportStockPdf()" [disabled]="filteredStock().length === 0">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.file" /></svg>
+            Ekspor PDF
+          </button>
+        </div>
+      </div>
+
+      @if (stockErrorMessage()) {
+        <p class="tx-error">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.alert" /></svg>
+          <span>{{ stockErrorMessage() }}</span>
+          <button type="button" (click)="retryStock()">Coba Lagi</button>
+        </p>
+      }
+
+      @if (isLoadingStock()) {
+        <div class="tx-skeleton">
+          @for (row of skeletonRows; track row) { <div class="tx-skeleton__row"></div> }
+        </div>
+      } @else if (stockReport().length === 0) {
+        <div class="tx-empty">
+          <span class="tx-empty__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.stock" /></svg></span>
+          <p>Belum ada data barang.</p>
+        </div>
+      } @else if (filteredStock().length === 0) {
+        <div class="tx-empty">
+          <span class="tx-empty__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg></span>
+          <p>Tidak ada barang yang cocok dengan pencarian atau filter.</p>
+        </div>
+      } @else {
+        <div class="tx-table-wrap">
+          <table class="tx-table">
+            <thead>
+              <tr>
+                <th>Kode</th><th>Nama</th><th>Kategori</th>
+                <th class="is-num">Stok Fisik</th><th class="is-num">Dipinjam</th><th class="is-num">Direservasi</th>
+                <th class="is-num">Diperiksa</th><th class="is-num">Tersedia</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of pagedStock(); track row.item_id) {
+                <tr>
+                  <td class="tx-table__code">{{ row.code }}</td>
+                  <td class="tx-table__name">{{ row.name }}</td>
+                  <td class="tx-table__muted">{{ row.category_name ?? '-' }}</td>
+                  <td class="is-num">{{ row.stock }}</td>
+                  <td class="is-num">{{ row.borrowed }}</td>
+                  <td class="is-num">{{ row.reserved }}</td>
+                  <td class="is-num">{{ row.under_inspection }}</td>
+                  <td class="is-num tx-table__available">{{ row.available }}</td>
+                  <td><span class="tx-status" [class]="'tx-status ' + stockStatusClass(row.status)">{{ row.status }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tx-footer">
+          <span class="tx-footer__info">Menampilkan {{ stockRangeFrom() }} - {{ stockRangeTo() }} dari {{ filteredStock().length }} barang</span>
+
+          @if (stockTotalPages() > 1) {
+            <nav class="tx-pager" aria-label="Halaman">
+              <button type="button" class="tx-pager__btn" [disabled]="stockPage() === 1" (click)="goToStockPage(stockPage() - 1)" aria-label="Sebelumnya">
+                <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+              </button>
+              @for (t of stockPageTokens(); track $index) {
+                @if (t === '…') {
+                  <span class="tx-pager__dots">…</span>
+                } @else {
+                  <button type="button" class="tx-pager__btn" [class.is-active]="t === stockPage()" (click)="goToStockPage(t)">{{ t }}</button>
+                }
+              }
+              <button type="button" class="tx-pager__btn" [disabled]="stockPage() === stockTotalPages()" (click)="goToStockPage(stockPage() + 1)" aria-label="Berikutnya">
+                <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+              </button>
+            </nav>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

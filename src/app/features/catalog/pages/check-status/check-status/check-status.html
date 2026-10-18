@@ -1,0 +1,51 @@
+<h1 class="text-2xl font-semibold text-gray-800 mb-2 text-center">Cek Status Peminjaman</h1>
+<p class="text-sm text-gray-500 mb-6 text-center">Masukkan kode transaksi dan token akses dari bukti pengajuan Anda.</p>
+
+<div class="bg-white rounded-lg shadow-sm p-6 max-w-md mx-auto">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Kode Transaksi</label>
+      <input formControlName="transactionCode" placeholder="PJM-20261009-A1B2C3"
+             class="w-full border border-gray-300 rounded-md px-3 py-2 font-mono text-sm" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Token Akses</label>
+      <input formControlName="accessToken" class="w-full border border-gray-300 rounded-md px-3 py-2 font-mono text-sm" />
+    </div>
+    <button type="submit" [disabled]="isChecking()"
+            class="w-full bg-emerald-600 text-white py-2 rounded-md hover:bg-emerald-700 disabled:opacity-50">
+      {{ isChecking() ? 'Memeriksa...' : 'Cek Status' }}
+    </button>
+  </form>
+
+  @if (errorMessage()) {
+    <p class="text-sm text-red-600 mt-4">{{ errorMessage() }}</p>
+  }
+  @if (notFound()) {
+    <p class="text-sm text-red-600 mt-4">Kode transaksi atau token akses tidak valid.</p>
+  }
+
+  @if (result(); as r) {
+    <div class="mt-6 border-t pt-4 text-sm space-y-2">
+      <div class="flex justify-between"><span class="text-gray-500">Status</span><span class="font-semibold">{{ statusLabel(r.status) }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Nama</span><span>{{ r.borrower_name }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Kelas/Jurusan</span><span>{{ r.borrower_class }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Tanggal Pinjam</span><span>{{ r.planned_borrow_date | date: 'dd MMM yyyy' }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-500">Tanggal Kembali</span><span>{{ r.planned_return_date | date: 'dd MMM yyyy' }}</span></div>
+      @if (r.rejected_reason) {
+        <p class="text-red-600 text-xs italic">Alasan ditolak: {{ r.rejected_reason }}</p>
+      }
+      @if (r.cancelled_reason) {
+        <p class="text-gray-500 text-xs italic">Alasan dibatalkan: {{ r.cancelled_reason }}</p>
+      }
+      <div class="pt-2">
+        <p class="text-gray-400 text-xs mb-1">Barang</p>
+        <ul class="list-disc list-inside">
+          @for (it of r.items; track it.item_code) {
+            <li>{{ it.item_name }} x{{ it.quantity }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,401 @@
+<div class="ln-page">
+
+  <!-- ===== Panel detail bersama — dipakai ulang di semua tab lewat ngTemplateOutlet ===== -->
+  <ng-template #detailPanel let-loan>
+    <div class="ln-detail">
+
+      <section class="ln-detail__section">
+        <h3>Data Peminjam</h3>
+        <dl class="ln-detail__grid">
+          <div><dt>Kontak</dt><dd>{{ loan.borrower_contact }}</dd></div>
+          <div><dt>NIS</dt><dd>{{ loan.nis }}</dd></div>
+          <div><dt>Status</dt><dd class="ln-cap">{{ loan.borrower_status }}</dd></div>
+          <div><dt>Kelas / Jurusan</dt><dd>{{ loan.borrower_class }}</dd></div>
+          <div><dt>Kode Transaksi</dt><dd class="ln-mono">{{ loan.transaction_code }}</dd></div>
+          <div><dt>Rencana Pinjam</dt><dd>{{ loan.planned_borrow_date | date: 'dd MMM yyyy' }}</dd></div>
+          <div><dt>Rencana Kembali</dt><dd>{{ loan.planned_return_date | date: 'dd MMM yyyy' }}</dd></div>
+          @if (loan.actual_return_date) {
+            <div><dt>Dikembalikan</dt><dd>{{ loan.actual_return_date | date: 'dd MMM yyyy' }}</dd></div>
+          }
+        </dl>
+      </section>
+
+      <section class="ln-detail__section">
+        <h3>Keperluan</h3>
+        <p class="ln-purpose">{{ loan.purpose }}</p>
+      </section>
+
+      <section class="ln-detail__section">
+        <h3>Barang Diajukan</h3>
+        <ul class="ln-items">
+          @for (it of loan.items; track it.id) {
+            <li><span>{{ it.item_name }} <small>({{ it.item_code }})</small></span><b>×{{ it.quantity }}</b></li>
+          }
+        </ul>
+      </section>
+
+      @if (loan.status === 'ditolak' && loan.rejected_reason) {
+        <p class="ln-reason ln-reason--red"><strong>Alasan ditolak:</strong> {{ loan.rejected_reason }}</p>
+      }
+      @if (loan.status === 'dibatalkan' && loan.cancelled_reason) {
+        <p class="ln-reason"><strong>Alasan dibatalkan:</strong> {{ loan.cancelled_reason }}</p>
+      }
+
+      <!-- Serah terima (tab Disetujui) -->
+      @if (loan.status === 'disetujui') {
+        <section class="ln-detail__section">
+          <h3>Serah Terima</h3>
+          <div class="ln-rows">
+            @for (item of loan.items; track item.id) {
+              <div class="ln-row">
+                <div class="ln-row__name">{{ item.item_name }}</div>
+                <div class="ln-row__progress">
+                  <span>{{ item.handed_over_quantity ?? 0 }}/{{ item.quantity }} diserahkan</span>
+                  <div class="ln-bar"><i [class.is-full]="remainingToHandover(item) === 0" [style.width.%]="handedOverPercent(item)"></i></div>
+                </div>
+                <div class="ln-row__action">
+                  @if (remainingToHandover(item) > 0) {
+                    <label class="ln-qty">
+                      <span>Jumlah</span>
+                      <input
+                        type="number"
+                        [value]="getHandoverQuantity(item.id, remainingToHandover(item))"
+                        (input)="setHandoverQuantity(item.id, $any($event.target).value)"
+                        min="1"
+                        [max]="remainingToHandover(item)"
+                        [disabled]="!isVerified(loan.id)"
+                      />
+                    </label>
+                    <button type="button" class="ln-btn ln-btn--primary" (click)="onHandover(item.id, remainingToHandover(item))" [disabled]="processingId() === item.id || !isVerified(loan.id)">
+                      Serahkan
+                    </button>
+                  } @else {
+                    <span class="ln-tag"><svg viewBox="0 0 24 24"><path [attr.d]="icons.check" /></svg>Selesai</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <label class="ln-verify" [class.is-checked]="isVerified(loan.id)">
+            <input type="checkbox" [checked]="isVerified(loan.id)" (change)="toggleVerified(loan.id)" />
+            <span>Saya telah memeriksa kecocokan identitas peminjam dengan bukti/kartu yang ditunjukkan</span>
+          </label>
+
+          <div class="ln-actions">
+            <button type="button" class="ln-btn ln-btn--danger" (click)="onCancelReservation(loan)" [disabled]="processingId() === loan.id">Batalkan Reservasi</button>
+          </div>
+        </section>
+      }
+
+      <!-- Pengembalian (tab Sedang Dipinjam) -->
+      @if (loan.status === 'dipinjam') {
+        <section class="ln-detail__section">
+          <h3>Pengembalian</h3>
+
+          @if (isOverdue(loan)) {
+            <p class="ln-late-note"><svg viewBox="0 0 24 24"><path [attr.d]="icons.alert" /></svg>Terlambat dikembalikan</p>
+          }
+
+          <div class="ln-rows">
+            @for (item of loan.items; track item.id) {
+              <div class="ln-return">
+                <div class="ln-row">
+                  <div class="ln-row__name">{{ item.item_name }}</div>
+                  <div class="ln-row__progress">
+                    <span>{{ item.returned_quantity }}/{{ item.quantity }} dikembalikan</span>
+                    <div class="ln-bar"><i [class.is-full]="remaining(item) === 0" [style.width.%]="returnedPercent(item)"></i></div>
+                  </div>
+                  <div class="ln-row__action">
+                    @if (remaining(item) === 0) {
+                      <span class="ln-tag"><svg viewBox="0 0 24 24"><path [attr.d]="icons.check" /></svg>Selesai</span>
+                    }
+                  </div>
+                </div>
+
+                @if (remaining(item) > 0) {
+                  <div class="ln-form">
+                    <label class="ln-field">
+                      <span>Jumlah</span>
+                      <input
+                        type="number"
+                        [value]="getReturnForm(item.id, remaining(item)).quantity"
+                        (input)="setReturnQuantity(item.id, remaining(item), $any($event.target).value)"
+                        min="1"
+                        [max]="remaining(item)"
+                      />
+                    </label>
+
+                    <label class="ln-field">
+                      <span>Kondisi</span>
+                      <select (change)="setReturnCondition(item.id, remaining(item), $any($event.target).value)">
+                        <option value="baik" [selected]="getReturnForm(item.id, remaining(item)).condition === 'baik'">Baik</option>
+                        <option value="rusak_ringan" [selected]="getReturnForm(item.id, remaining(item)).condition === 'rusak_ringan'">Rusak Ringan</option>
+                        <option value="rusak_berat" [selected]="getReturnForm(item.id, remaining(item)).condition === 'rusak_berat'">Rusak Berat</option>
+                      </select>
+                    </label>
+
+                    <label class="ln-check">
+                      <input
+                        type="checkbox"
+                        [checked]="getReturnForm(item.id, remaining(item)).complete"
+                        (change)="setReturnComplete(item.id, remaining(item), $any($event.target).checked)"
+                      />
+                      <span>Lengkap</span>
+                    </label>
+
+                    <label class="ln-field ln-field--wide">
+                      <span>Catatan (opsional)</span>
+                      <textarea
+                        rows="2"
+                        placeholder="Tulis catatan kondisi barang"
+                        [value]="getReturnForm(item.id, remaining(item)).notes"
+                        (input)="setReturnNotes(item.id, remaining(item), $any($event.target).value)"
+                      ></textarea>
+                    </label>
+
+                    <div class="ln-field ln-field--wide">
+                      <span>Bukti foto (opsional, maks. 2MB)</span>
+                      <div class="ln-upload">
+                        <label class="ln-file">
+                          <input type="file" accept="image/*" (change)="onReturnPhotoSelected(item.id, remaining(item), $event)" />
+                          <svg viewBox="0 0 24 24"><path [attr.d]="icons.camera" /></svg>
+                          Pilih foto
+                        </label>
+                        @if (getReturnForm(item.id, remaining(item)).isUploadingPhoto) {
+                          <span class="ln-upload__status">Mengunggah...</span>
+                        }
+                        @if (getReturnForm(item.id, remaining(item)).photoUrl) {
+                          <span class="ln-upload__status is-ok"><svg viewBox="0 0 24 24"><path [attr.d]="icons.check" /></svg>Foto terunggah</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="ln-field--wide">
+                      <button type="button" class="ln-btn ln-btn--primary ln-btn--block" (click)="onProcessReturn(item.id, remaining(item))" [disabled]="processingId() === item.id">
+                        Proses Pengembalian
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Riwayat status -->
+      <section class="ln-detail__section">
+        <h3>Riwayat Status</h3>
+        @if (isLoadingHistory()) {
+          <p class="ln-history__empty">Memuat riwayat...</p>
+        } @else if (!statusHistory()[loan.id] || statusHistory()[loan.id].length === 0) {
+          <p class="ln-history__empty">Belum ada riwayat.</p>
+        } @else {
+          <ul class="ln-history">
+            @for (entry of statusHistory()[loan.id]; track entry.id) {
+              <li>
+                <span class="ln-history__dot"></span>
+                <div>
+                  <p>
+                    {{ entry.from_status ? statusLabel(entry.from_status) : 'Dibuat' }} →
+                    <strong>{{ statusLabel(entry.to_status) }}</strong>
+                    @if (entry.changed_by_name) { <span class="ln-history__by">oleh {{ entry.changed_by_name }}</span> }
+                  </p>
+                  <time>{{ entry.changed_at | date: 'dd MMM yyyy, HH:mm' }}</time>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  </ng-template>
+
+  <!-- ===== Header ===== -->
+  <header class="ln-header">
+    <span class="ln-header__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.clipboard" /></svg></span>
+    <div>
+      <h1 class="ln-header__title">Peminjaman</h1>
+      <p class="ln-header__subtitle">Kelola pengajuan, penyerahan, pengembalian, dan pemeriksaan barang.</p>
+    </div>
+  </header>
+
+  <!-- ===== Tab + pencarian ===== -->
+  <section class="ln-toolbar" aria-label="Filter peminjaman">
+    <div class="ln-tabs" role="tablist" aria-label="Tahap peminjaman">
+      @for (tab of tabs; track tab.id) {
+        <button type="button" role="tab" class="ln-tab" [class.is-active]="activeTab() === tab.id" [attr.aria-selected]="activeTab() === tab.id" (click)="setTab(tab.id)">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <div class="ln-toolbar__row">
+      <div class="ln-search">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        <input
+          type="search"
+          placeholder="Cari nama, NIS, atau kode transaksi..."
+          aria-label="Cari peminjaman"
+          [value]="searchTerm()"
+          (input)="onSearchInput($any($event.target).value)"
+        />
+      </div>
+      <button type="button" class="ln-reset" (click)="resetSearch()">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="ln-error">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.alert" /></svg>
+      <span>{{ errorMessage() }}</span>
+      <button type="button" (click)="retry()">Muat Ulang</button>
+    </p>
+  }
+
+  @if (isLoading()) {
+
+    <div class="ln-skeleton-list" aria-label="Memuat data">
+      @for (slot of skeletonSlots; track slot) {
+        <div class="ln-skeleton-card">
+          <span class="ln-skeleton-card__avatar"></span>
+          <span class="ln-skeleton-card__line"></span>
+          <span class="ln-skeleton-card__line ln-skeleton-card__line--short"></span>
+          <span class="ln-skeleton-card__block"></span>
+        </div>
+      }
+    </div>
+
+  } @else if (activeTab() === 'perlu-diperiksa') {
+
+    <!-- ===== Perlu diperiksa ===== -->
+    @if (filteredInspectionItems().length === 0) {
+      <div class="ln-state">
+        <span class="ln-state__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.wrench" /></svg></span>
+        <h2>Tidak ada barang yang menunggu pemeriksaan</h2>
+        <p>Barang yang dikembalikan dalam kondisi rusak akan muncul di sini untuk diperiksa.</p>
+      </div>
+    } @else {
+      <div class="ln-list">
+        @for (item of filteredInspectionItems(); track item.id) {
+          <article class="ln-inspect">
+            <span class="ln-inspect__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.wrench" /></svg></span>
+            <div class="ln-inspect__info">
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.code }}</span>
+              <small>{{ item.quantity_under_inspection }} unit menunggu pemeriksaan</small>
+            </div>
+            <div class="ln-inspect__actions">
+              <label class="ln-qty">
+                <span>Jumlah</span>
+                <input
+                  type="number"
+                  [value]="getResolveQty(item.id, item.quantity_under_inspection ?? 0)"
+                  (input)="setResolveQty(item.id, $any($event.target).value)"
+                  min="1"
+                  [max]="item.quantity_under_inspection"
+                />
+              </label>
+              <button type="button" class="ln-btn ln-btn--success" (click)="onResolveInspection(item, 'kembalikan')" [disabled]="processingId() === item.id">
+                Kembalikan ke Stok
+              </button>
+              @if (isAdmin()) {
+                <button type="button" class="ln-btn ln-btn--danger" (click)="onResolveInspection(item, 'writeoff')" [disabled]="processingId() === item.id">
+                  Tulis-Hapus (Rusak)
+                </button>
+              } @else {
+                <span class="ln-note">Tulis-Hapus khusus Admin</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+  } @else if (loans().length === 0) {
+
+    <div class="ln-state">
+      <span class="ln-state__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.inbox" /></svg></span>
+      <h2>Tidak ada data pada tab ini</h2>
+      <p>Coba pindah ke tab lain atau ubah kata kunci pencarian.</p>
+    </div>
+
+  } @else {
+
+    <!-- ===== Daftar peminjaman (kartu ringkas) ===== -->
+    <div class="ln-list">
+      @for (loan of loans(); track loan.id) {
+        <article class="ln-card" [class.is-open]="expandedLoanId() === loan.id">
+
+          <div class="ln-card__top">
+            <span class="ln-avatar" aria-hidden="true">{{ loan.borrower_name.charAt(0).toUpperCase() }}</span>
+            <div class="ln-card__who">
+              <h2>{{ loan.borrower_name }}</h2>
+              <p>{{ itemsSummary(loan) }}</p>
+            </div>
+            <div class="ln-badges">
+              <span class="ln-badge" [class]="'ln-badge ' + statusBadgeClass(loan.status)">{{ statusLabel(loan.status) }}</span>
+              @if (activeTab() === 'dipinjam' && isOverdue(loan)) {
+                <span class="ln-badge s-rejected">Terlambat</span>
+              }
+            </div>
+          </div>
+
+          <div class="ln-card__meta">
+            <span><svg viewBox="0 0 24 24"><path [attr.d]="icons.clipboard" /></svg><b class="ln-mono">{{ loan.transaction_code }}</b></span>
+            <span class="ln-card__return" [class.is-late]="activeTab() === 'dipinjam' && isOverdue(loan)">
+              <svg viewBox="0 0 24 24"><path [attr.d]="icons.clock" /></svg>
+              Kembali {{ loan.planned_return_date | date: 'dd MMM yyyy' }}
+            </span>
+          </div>
+
+          @if (activeTab() === 'pengajuan') {
+            <p class="ln-card__purpose"><strong>Keperluan:</strong> {{ loan.purpose }}</p>
+          }
+
+          <div class="ln-card__bar">
+            @if (activeTab() === 'pengajuan') {
+              <button type="button" class="ln-btn ln-btn--primary" (click)="onApprove(loan)" [disabled]="processingId() === loan.id">Setujui</button>
+              <button type="button" class="ln-btn ln-btn--danger" (click)="onReject(loan)" [disabled]="processingId() === loan.id">Tolak</button>
+            }
+            <button type="button" class="ln-detail-toggle" (click)="toggleDetail(loan)" [attr.aria-expanded]="expandedLoanId() === loan.id">
+              {{ expandedLoanId() === loan.id ? 'Sembunyikan Detail' : 'Lihat Detail' }}
+              <svg viewBox="0 0 24 24" [class.is-open]="expandedLoanId() === loan.id"><path [attr.d]="icons.chevron" /></svg>
+            </button>
+          </div>
+
+          @if (expandedLoanId() === loan.id) {
+            <ng-container *ngTemplateOutlet="detailPanel; context: { $implicit: loan }"></ng-container>
+          }
+        </article>
+      }
+    </div>
+
+    <!-- Footer: info + pagination -->
+    <div class="ln-footer">
+      <span class="ln-footer__info">Menampilkan {{ rangeFrom() }} - {{ rangeTo() }} dari {{ totalCount() }} data</span>
+
+      @if (totalPages() > 1) {
+        <nav class="ln-pager" aria-label="Halaman">
+          <button type="button" class="ln-pager__btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)" aria-label="Sebelumnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+          </button>
+          @for (t of pageTokens(); track $index) {
+            @if (t === '…') {
+              <span class="ln-pager__dots">…</span>
+            } @else {
+              <button type="button" class="ln-pager__btn" [class.is-active]="t === page()" (click)="goToPage(t)">{{ t }}</button>
+            }
+          }
+          <button type="button" class="ln-pager__btn" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)" aria-label="Berikutnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+          </button>
+        </nav>
+      }
+    </div>
+  }
+</div>

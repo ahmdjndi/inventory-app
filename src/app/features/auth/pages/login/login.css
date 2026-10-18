@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:host { display: block; height: 100vh; height: 100dvh; }
+
+.lg-page {
+  --dark: rgb(32, 94, 75);
+  --green-700: #047857;
+  --green-600: #059669;
+  --green-500: #10b981;
+  --green-300: #6ee7b7;
+  --ink: #10211c;
+  --muted: #66796f;
+  --line: #e2e8e5;
+
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  height: 100%;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--dark);
+  font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+}
+.lg-page *, .lg-page *::before, .lg-page *::after { box-sizing: border-box; }
+.lg-page a { color: inherit; text-decoration: none; }
+.lg-page svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.9; flex: none; }
+.lg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* =========================================================
+   PANEL KIRI
+   ========================================================= */
+
+.lg-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  padding: clamp(24px, 4.5vh, 44px) 48px clamp(28px, 5vh, 48px);
+  color: #fff;
+  text-align: center;
+  background: var(--dark);
+}
+
+
+.lg-hero__tag { margin: 0; color: rgba(255, 255, 255, .62); font-size: 13px; font-weight: 500; }
+
+.lg-hero__main {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.lg-ring { position: absolute; top: 50%; left: 50%; border: 1px solid rgba(255, 255, 255, .08); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+.lg-ring--one { width: min(440px, 62vh); height: min(440px, 62vh); }
+.lg-ring--two { width: min(640px, 90vh); height: min(640px, 90vh); border-color: rgba(255, 255, 255, .045); }
+
+.lg-hero__welcome { position: relative; margin: 0 0 clamp(8px, 1.6vh, 16px); color: var(--green-300); font-size: clamp(14px, 2vh, 18px); font-weight: 600; }
+.lg-hero__title {
+  position: relative;
+  margin: 0;
+  font-size: clamp(44px, min(6.2vw, 11.5vh), 96px);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: .98;
+}
+.lg-hero__lead { position: relative; max-width: 340px; margin: clamp(14px, 2.6vh, 26px) 0 0; color: rgba(255, 255, 255, .68); font-size: clamp(12.5px, 1.9vh, 14px); line-height: 1.7; }
+
+/* Kartu fitur */
+.lg-feats {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(100%, 440px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.lg-feat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 18px;
+  backdrop-filter: blur(6px);
+}
+.lg-feat__icon { display: grid; place-items: center; width: 38px; height: 38px; flex: none; color: var(--green-300); background: rgba(16, 185, 129, .16); border-radius: 12px; }
+.lg-feat__icon svg { width: 19px; height: 19px; }
+.lg-feat__text { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.lg-feat__text strong { font-size: 13.5px; font-weight: 700; }
+.lg-feat__text small { color: rgba(255, 255, 255, .55); font-size: 11.5px; }
+.lg-feat--accent { background: rgba(16, 185, 129, .16); border-color: rgba(110, 231, 183, .3); }
+.lg-feat--accent .lg-feat__icon { color: #fff; background: var(--green-600); }
+
+/* =========================================================
+   PANEL KANAN
+   ========================================================= */
+.lg-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: clamp(18px, 3.4vh, 32px) clamp(28px, 4.5vw, 64px) clamp(14px, 2.6vh, 24px);
+  background: #fff;
+  border-radius: 40px 0 0 40px;
+}
+
+.lg-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.lg-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+.lg-brand__logo { display: block; width: 36px; height: 36px; object-fit: contain; }
+.lg-brand__logo--fallback { padding: 6px; color: var(--green-600); background: #d1fae5; border-radius: 10px; stroke-width: 1.8; }
+.lg-home { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13.5px; font-weight: 600; transition: color .18s; }
+.lg-home svg { width: 18px; height: 18px; }
+.lg-home:hover { color: var(--green-700); }
+
+.lg-main { display: flex; flex: 1; align-items: center; justify-content: center; min-height: 0; }
+.lg-card { width: 100%; max-width: 420px; animation: lg-rise .55s cubic-bezier(.2, .7, .2, 1) both; }
+
+.lg-head { margin-bottom: clamp(18px, 3.4vh, 30px); text-align: center; }
+.lg-chip { display: inline-block; margin-bottom: 14px; padding: 5px 12px; color: var(--green-600); background: #d1fae5; border-radius: 9999px; font-size: 10.5px; font-weight: 800; letter-spacing: .12em; }
+.lg-head h1 { margin: 0 0 8px; font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
+.lg-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* Alert */
+.lg-alert { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; padding: 11px 14px; color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; border-radius: 16px; font-size: 13px; line-height: 1.5; animation: lg-shake .35s ease; }
+.lg-alert svg { width: 18px; height: 18px; margin-top: 1px; }
+.lg-alert--notice { color: var(--green-700); background: #ecfdf5; border-color: #a7f3d0; animation: lg-fade .25s ease; }
+.lg-alert__symbol { display: grid; place-items: center; width: 18px; height: 18px; flex: none; border: 1.5px solid currentColor; border-radius: 50%; font-size: 12px; font-weight: 700; }
+
+/* Form */
+.lg-form { display: flex; flex-direction: column; gap: clamp(16px, 2.8vh, 22px); }
+.lg-field label { display: block; margin-bottom: 2px; color: #1f2937; font-size: 14px; font-weight: 700; }
+.lg-input { position: relative; }
+.lg-input input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 30px 10px 0;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid #a7f3d0;
+  border-radius: 0;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color .18s;
+}
+.lg-input input::placeholder { color: #94a3b8; }
+.lg-input input:focus { border-bottom-color: var(--green-600); }
+.lg-input--password input { padding-right: 62px; }
+
+/* Hilangkan warna biru Chrome saat autofill */
+.lg-input input:-webkit-autofill,
+.lg-input input:-webkit-autofill:hover,
+.lg-input input:-webkit-autofill:focus,
+.lg-input input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background-color: #fff !important;
+}
+
+.lg-check { position: absolute; top: 50%; right: 4px; width: 18px; height: 18px; color: var(--green-500); transform: translateY(-50%); stroke-width: 2.4; pointer-events: none; }
+.lg-check--shift { right: 34px; }
+.lg-toggle { position: absolute; top: 50%; right: 0; display: grid; place-items: center; width: 30px; height: 30px; color: #94a3b8; background: transparent; border: 0; border-radius: 8px; transform: translateY(-50%); cursor: pointer; transition: color .18s, background .18s; }
+.lg-toggle:hover { color: var(--ink); background: #f1f5f9; }
+.lg-toggle svg { width: 18px; height: 18px; }
+
+/* State error */
+.lg-field.is-error .lg-input input { border-bottom-color: #dc2626; }
+.lg-field__error { display: block; margin-top: 7px; color: #dc2626; font-size: 12px; font-weight: 600; }
+.lg-field__hint { display: flex; align-items: center; gap: 6px; margin-top: 7px; color: #b45309; font-size: 12px; font-weight: 600; }
+.lg-field__hint svg { width: 14px; height: 14px; }
+
+/* Tombol */
+.lg-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: clamp(48px, 7vh, 54px);
+  margin-top: 4px;
+  color: #fff;
+  background: var(--green-600);
+  border: 0;
+  border-radius: 9999px;
+  box-shadow: 0 14px 26px -14px rgba(4, 120, 87, .85);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .18s, box-shadow .18s, opacity .18s;
+}
+.lg-submit svg { width: 19px; height: 19px; }
+.lg-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 18px 30px -14px rgba(4, 120, 87, .9); }
+.lg-submit:active:not(:disabled) { transform: translateY(0); }
+.lg-submit:disabled { opacity: .75; cursor: not-allowed; }
+.lg-spinner { width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, .4); border-top-color: #fff; border-radius: 50%; animation: lg-spin .7s linear infinite; }
+
+.lg-note { margin: clamp(14px, 2.6vh, 22px) 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; }
+.lg-note a { color: var(--green-700); font-weight: 700; }
+.lg-note a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.lg-footer { color: #8a9c93; font-size: 12px; }
+
+.lg-page :is(a, button):focus-visible { outline: 2px solid var(--green-600); outline-offset: 3px; border-radius: 10px; }
+
+@keyframes lg-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes lg-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lg-spin { to { transform: rotate(360deg); } }
+@keyframes lg-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+/* Layar pendek: sembunyikan kartu fitur supaya tetap tanpa scroll */
+@media (max-height: 640px) {
+  .lg-feats { display: none; }
+}
+
+@media (max-width: 1100px) {
+  .lg-hero { padding-inline: 28px; }
+  .lg-feats { grid-template-columns: 1fr; width: min(100%, 260px); }
+  .lg-feat:nth-child(n + 3) { display: none; }
+}
+
+/* Tablet & HP: panel gelap jadi header ringkas, halaman boleh di-scroll */
+@media (max-width: 860px) {
+  :host { height: auto; min-height: 100dvh; }
+  .lg-page { display: flex; flex-direction: column; height: auto; min-height: 100dvh; overflow: visible; }
+
+  .lg-hero { padding: 28px 20px 72px; }
+  .lg-hero__tag, .lg-hero__lead, .lg-feats, .lg-ring { display: none; }
+  .lg-hero__main { flex: none; }
+  .lg-hero__welcome { font-size: 14px; }
+  .lg-hero__title { font-size: 40px; }
+  .lg-hero__title br { display: none; }
+
+  .lg-panel { flex: 1; margin-top: -36px; padding: 20px 20px 18px; border-radius: 32px 32px 0 0; }
+  .lg-main { align-items: flex-start; padding: 24px 0; }
+  .lg-head h1 { font-size: 30px; }
+  .lg-footer { text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

@@ -1,0 +1,162 @@
+<div class="in-page">
+
+  <header class="in-page__header">
+    <div class="in-page__head-left">
+      <span class="in-page__head-icon">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.incoming" /></svg>
+      </span>
+      <div>
+        <h1 class="in-page__title">Barang Masuk</h1>
+        <p class="in-page__subtitle">Riwayat pencatatan barang yang masuk ke inventaris.</p>
+      </div>
+    </div>
+    <a routerLink="/incoming/create" class="in-page__add">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus" /></svg>
+      Catat Barang Masuk
+    </a>
+  </header>
+
+  <!-- Kartu statistik -->
+  <div class="in-stats">
+    @for (c of summary(); track c.label) {
+      <div class="in-stat">
+        <span class="in-stat__icon" [class]="'in-stat__icon tone-' + c.tone">
+          <svg viewBox="0 0 24 24"><path [attr.d]="c.icon" /></svg>
+        </span>
+        <div class="in-stat__body">
+          <span class="in-stat__label">{{ c.label }}</span>
+          <strong class="in-stat__value">{{ c.value }}</strong>
+          <small class="in-stat__desc">{{ c.desc }}</small>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="in-card">
+    <!-- Toolbar -->
+    <div class="in-toolbar">
+      <div class="in-toolbar__search">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        <input
+          type="search"
+          placeholder="Cari barang, kode, sumber, atau pencatat..."
+          aria-label="Cari barang masuk"
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+          class="in-toolbar__search-input"
+        />
+      </div>
+
+      <label class="in-toolbar__date">
+        <span>Dari</span>
+        <input type="date" [value]="dateFrom()" [max]="dateTo() || null" (change)="onDateFrom($any($event.target).value)" />
+      </label>
+      <label class="in-toolbar__date">
+        <span>Sampai</span>
+        <input type="date" [value]="dateTo()" [min]="dateFrom() || null" (change)="onDateTo($any($event.target).value)" />
+      </label>
+
+      <select class="in-toolbar__select" aria-label="Urutkan" (change)="onSort($any($event.target).value)">
+        <option value="newest" [selected]="sortOrder() === 'newest'">Terbaru</option>
+        <option value="oldest" [selected]="sortOrder() === 'oldest'">Terlama</option>
+        <option value="qty" [selected]="sortOrder() === 'qty'">Jumlah Terbanyak</option>
+      </select>
+
+      <button type="button" class="in-toolbar__reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+        Reset
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="in-state">
+        <span class="in-state__icon in-state__icon--error"><svg viewBox="0 0 24 24"><path [attr.d]="icons.alert" /></svg></span>
+        <h2>Data gagal dimuat</h2>
+        <p>{{ errorMessage() }}</p>
+        <button type="button" class="in-btn" (click)="load()">Coba Lagi</button>
+      </div>
+    } @else if (isLoading()) {
+      <div class="in-skeleton">
+        @for (row of skeletonRows; track row) {
+          <div class="in-skeleton__row"></div>
+        }
+      </div>
+    } @else if (movements().length === 0) {
+      <div class="in-state">
+        <span class="in-state__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.incoming" /></svg></span>
+        <h2>Belum ada riwayat barang masuk</h2>
+        <p>Catat barang masuk pertama untuk menambah stok inventaris.</p>
+        <a routerLink="/incoming/create" class="in-btn in-btn--primary">Catat Barang Masuk</a>
+      </div>
+    } @else if (filteredMovements().length === 0) {
+      <div class="in-state">
+        <span class="in-state__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg></span>
+        <h2>Data tidak ditemukan</h2>
+        <p>Coba ubah kata kunci atau rentang tanggal.</p>
+        <button type="button" class="in-btn" (click)="resetFilters()">Reset Filter</button>
+      </div>
+    } @else {
+      <div class="in-table-wrap">
+        <table class="in-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Tanggal</th>
+              <th>Barang</th>
+              <th>Jumlah</th>
+              <th>Sumber</th>
+              <th>Keterangan</th>
+              <th>Dicatat Oleh</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of pagedMovements(); track m.id; let i = $index) {
+              <tr>
+                <td class="in-table__muted">{{ rangeFrom() + i }}</td>
+                <td class="in-table__date">{{ m.transaction_date | date: 'dd MMM yyyy' }}</td>
+                <td>
+                  <div class="in-item">
+                    <span class="in-item__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.box" /></svg></span>
+                    <div>
+                      <strong>{{ m.item_name }}</strong>
+                      <small>{{ m.item_code }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="in-table__qty">+{{ m.quantity }}</span></td>
+                <td class="in-table__muted">{{ m.source ?? '-' }}</td>
+                <td class="in-table__notes">{{ m.notes ?? '-' }}</td>
+                <td class="in-table__muted">{{ m.recorder_name }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer: info + pagination -->
+      <div class="in-footer">
+        <span class="in-footer__info">
+          Menampilkan {{ rangeFrom() }} - {{ rangeTo() }} dari {{ filteredMovements().length }} catatan
+        </span>
+
+        <nav class="in-pager" aria-label="Halaman">
+          <button type="button" class="in-pager__btn" [disabled]="page() === 1" (click)="goTo(page() - 1)" aria-label="Sebelumnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+          </button>
+
+          @for (t of pageTokens(); track $index) {
+            @if (t === '…') {
+              <span class="in-pager__dots">…</span>
+            } @else {
+              <button type="button" class="in-pager__btn" [class.is-active]="t === page()" (click)="goTo(t)">{{ t }}</button>
+            }
+          }
+
+          <button type="button" class="in-pager__btn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)" aria-label="Berikutnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+          </button>
+        </nav>
+      </div>
+    }
+  </div>
+</div>

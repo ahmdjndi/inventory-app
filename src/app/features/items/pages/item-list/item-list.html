@@ -1,0 +1,206 @@
+<div class="item-page">
+
+  <header class="item-page__header">
+    <div class="item-page__head-left">
+      <span class="item-page__head-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z M4 10h16 M10 10v10" /></svg>
+      </span>
+      <div>
+        <h1 class="item-page__title">Daftar Barang</h1>
+        <p class="item-page__subtitle">Kelola data barang inventaris dengan mudah.</p>
+      </div>
+    </div>
+    <a routerLink="/items/create" class="item-page__add">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus" /></svg>
+      Tambah Barang
+    </a>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="item-page__error">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></svg>
+      {{ errorMessage() }}
+    </p>
+  }
+
+  <!-- Kartu statistik -->
+  <div class="item-stats">
+    @for (c of summary(); track c.label) {
+      <div class="item-stat">
+        <span class="item-stat__icon" [class]="'item-stat__icon tone-' + c.tone">
+          <svg viewBox="0 0 24 24"><path [attr.d]="c.icon" /></svg>
+        </span>
+        <div class="item-stat__body">
+          <span class="item-stat__label">{{ c.label }}</span>
+          <strong class="item-stat__value">{{ c.value }}</strong>
+          <small class="item-stat__desc">{{ c.desc }}</small>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="item-card">
+    <!-- Toolbar -->
+    <div class="item-toolbar">
+      <div class="item-toolbar__search">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        <input
+          placeholder="Cari nama barang, kode, atau kategori..."
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+          class="item-toolbar__search-input"
+        />
+      </div>
+
+      <select (change)="onCategory($any($event.target).value)" class="item-toolbar__select">
+        <option value="" [selected]="!categoryFilter()">Semua Kategori</option>
+        @for (c of categories(); track c.id) {
+          <option [value]="c.id" [selected]="categoryFilter() === c.id">{{ c.name }}</option>
+        }
+      </select>
+
+      <select (change)="onLocation($any($event.target).value)" class="item-toolbar__select">
+        <option value="" [selected]="!locationFilter()">Semua Lokasi</option>
+        @for (l of locations(); track l.id) {
+          <option [value]="l.id" [selected]="locationFilter() === l.id">{{ l.name }}</option>
+        }
+      </select>
+
+      <select (change)="onCondition($any($event.target).value)" class="item-toolbar__select">
+        <option value="" [selected]="!conditionFilter()">Semua Status</option>
+        <option value="baik" [selected]="conditionFilter() === 'baik'">Tersedia</option>
+        <option value="rusak_ringan" [selected]="conditionFilter() === 'rusak_ringan'">Dalam Perbaikan</option>
+        <option value="rusak_berat" [selected]="conditionFilter() === 'rusak_berat'">Rusak</option>
+      </select>
+
+      <button type="button" class="item-toolbar__reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+        Reset
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="item-skeleton">
+        @for (row of skeletonRows; track row) {
+          <div class="item-skeleton__row"></div>
+        }
+      </div>
+    } @else if (filteredItems().length === 0) {
+      <div class="item-empty">
+        <span class="item-empty__icon">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        </span>
+        <p class="item-empty__text">Tidak ada barang yang cocok dengan pencarian/filter.</p>
+      </div>
+    } @else {
+      <div class="item-table-wrap">
+        <table class="item-table">
+          <thead>
+            <tr>
+              <th class="col-check">
+                <input type="checkbox" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" aria-label="Pilih semua barang di halaman ini" />
+              </th>
+              <th>No.</th>
+              <th>Gambar</th>
+              <th>Nama Barang</th>
+              <th>Kategori</th>
+              <th>Kode Barang</th>
+              <th>Lokasi</th>
+              <th>Jumlah</th>
+              <th>Status</th>
+              <th class="item-table__head--right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of pagedItems(); track item.id; let i = $index) {
+              <tr [class.is-selected]="selectedIds().has(item.id)">
+                <td class="col-check">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedIds().has(item.id)"
+                    (change)="toggleOne(item.id, $any($event.target).checked)"
+                    [attr.aria-label]="'Pilih ' + item.name"
+                  />
+                </td>
+                <td class="item-table__muted">{{ rangeFrom() + i }}</td>
+                <td>
+                  <span class="item-table__thumb">
+                    @if (imageOf(item); as src) {
+                      <img [src]="src" [alt]="item.name" />
+                    } @else {
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.image" /></svg>
+                    }
+                  </span>
+                </td>
+                <td class="item-table__name">{{ item.name }}</td>
+                <td>
+                  <span class="item-table__cat" [class]="'item-table__cat ' + categoryTone(item.category_id)">
+                    {{ item.category_name ?? '-' }}
+                  </span>
+                </td>
+                <td class="item-table__code">{{ item.code }}</td>
+                <td class="item-table__loc">
+                  <svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg>
+                  {{ item.location_name ?? '-' }}
+                </td>
+<td>
+  {{ item.stock }}
+  @if (item.stock === 0) {
+    <span class="ml-1 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+      Habis
+    </span>
+  }
+</td>
+                <td>
+                  <span class="item-table__badge" [class]="'item-table__badge ' + statusClass(item.condition)">
+                    {{ statusLabel(item.condition) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="item-table__actions">
+                    <a [routerLink]="['/items', item.id]" class="item-table__action item-table__action--detail" [attr.aria-label]="'Detail barang ' + item.name" title="Detail">
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.eye" /></svg>
+                    </a>
+                    <a [routerLink]="['/items', item.id, 'edit']" class="item-table__action item-table__action--edit" [attr.aria-label]="'Ubah barang ' + item.name" title="Ubah">
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.edit" /></svg>
+                    </a>
+                    <button type="button" (click)="onDelete(item)" class="item-table__action item-table__action--delete" [attr.aria-label]="'Hapus barang ' + item.name" title="Hapus">
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.trash" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer: info + pagination -->
+      <div class="item-footer">
+        <span class="item-footer__info">
+          Menampilkan {{ rangeFrom() }} - {{ rangeTo() }} dari {{ filteredItems().length }} barang
+        </span>
+
+        <nav class="item-pager" aria-label="Halaman">
+          <button type="button" class="item-pager__btn" [disabled]="page() === 1" (click)="goTo(page() - 1)" aria-label="Sebelumnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+          </button>
+
+          @for (t of pageTokens(); track $index) {
+            @if (t === '…') {
+              <span class="item-pager__dots">…</span>
+            } @else {
+              <button type="button" class="item-pager__btn" [class.is-active]="t === page()" (click)="goTo(t)">
+                {{ t }}
+              </button>
+            }
+          }
+
+          <button type="button" class="item-pager__btn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)" aria-label="Berikutnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+          </button>
+        </nav>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,166 @@
+<div class="category-page">
+
+  <header class="category-page__header">
+    <div class="category-page__head-left">
+      <span class="category-page__head-icon">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.tag" /></svg>
+      </span>
+      <div>
+        <h1 class="category-page__title">Daftar Kategori</h1>
+        <p class="category-page__subtitle">Kelola kategori barang inventaris.</p>
+      </div>
+    </div>
+    <a routerLink="/categories/create" class="category-page__add">
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus" /></svg>
+      Tambah Kategori
+    </a>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="category-page__error">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></svg>
+      {{ errorMessage() }}
+    </p>
+  }
+
+  <!-- Kartu statistik -->
+  <div class="category-stats">
+    @for (c of summary(); track c.label) {
+      <div class="category-stat">
+        <span class="category-stat__icon" [class]="'category-stat__icon tone-' + c.tone">
+          <svg viewBox="0 0 24 24"><path [attr.d]="c.icon" /></svg>
+        </span>
+        <div class="category-stat__body">
+          <span class="category-stat__label">{{ c.label }}</span>
+          <strong class="category-stat__value">{{ c.value }}</strong>
+          <small class="category-stat__desc">{{ c.desc }}</small>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="category-card">
+    <!-- Toolbar -->
+    <div class="category-toolbar">
+      <div class="category-toolbar__search">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        <input
+          placeholder="Cari nama atau deskripsi kategori..."
+          [value]="searchTerm()"
+          (input)="onSearch($any($event.target).value)"
+          class="category-toolbar__search-input"
+        />
+      </div>
+      <button type="button" class="category-toolbar__reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons.reset" /></svg>
+        Reset
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="category-skeleton">
+        @for (row of skeletonRows; track row) {
+          <div class="category-skeleton__row"></div>
+        }
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="category-empty">
+        <span class="category-empty__icon">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.empty" /></svg>
+        </span>
+        <p class="category-empty__text">Belum ada kategori.</p>
+        <a routerLink="/categories/create" class="category-empty__cta">Tambah kategori pertama</a>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="category-empty">
+        <span class="category-empty__icon">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.search" /></svg>
+        </span>
+        <p class="category-empty__text">Tidak ada kategori yang cocok dengan pencarian.</p>
+      </div>
+    } @else {
+      <div class="category-table-wrap">
+        <table class="category-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Nama Kategori</th>
+              <th>Deskripsi</th>
+              <th>Jumlah Barang</th>
+              <th class="category-table__head--center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (category of pagedCategories(); track category.id; let i = $index) {
+              <tr>
+                <td class="category-table__muted">{{ rangeFrom() + i }}</td>
+                <td>
+                  <div class="category-table__name">
+                    <span class="category-table__icon" [class]="'category-table__icon ' + tone(category)">
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.tag" /></svg>
+                    </span>
+                    {{ category.name }}
+                  </div>
+                </td>
+                <td class="category-table__desc">{{ category.description ?? '-' }}</td>
+                <td>
+                  <span class="category-table__count" [class.category-table__count--muted]="category.item_count === 0">
+                    {{ category.item_count }} barang
+                  </span>
+                </td>
+                <td>
+                  <div class="category-table__actions">
+                    <a
+                      [routerLink]="['/categories', category.id, 'edit']"
+                      class="category-table__action category-table__action--edit"
+                      [attr.aria-label]="'Ubah kategori ' + category.name"
+                      title="Ubah"
+                    >
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.edit" /></svg>
+                    </a>
+                    <button
+                      type="button"
+                      (click)="onDelete(category)"
+                      class="category-table__action category-table__action--delete"
+                      [attr.aria-label]="'Hapus kategori ' + category.name"
+                      title="Hapus"
+                    >
+                      <svg viewBox="0 0 24 24"><path [attr.d]="icons.trash" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer: info + pagination -->
+      <div class="category-footer">
+        <span class="category-footer__info">
+          Menampilkan {{ rangeFrom() }} - {{ rangeTo() }} dari {{ filtered().length }} kategori
+        </span>
+
+        <nav class="category-pager" aria-label="Halaman">
+          <button type="button" class="category-pager__btn" [disabled]="page() === 1" (click)="goTo(page() - 1)" aria-label="Sebelumnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.left" /></svg>
+          </button>
+
+          @for (t of pageTokens(); track $index) {
+            @if (t === '…') {
+              <span class="category-pager__dots">…</span>
+            } @else {
+              <button type="button" class="category-pager__btn" [class.is-active]="t === page()" (click)="goTo(t)">
+                {{ t }}
+              </button>
+            }
+          }
+
+          <button type="button" class="category-pager__btn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)" aria-label="Berikutnya">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons.right" /></svg>
+          </button>
+        </nav>
+      </div>
+    }
+  </div>
+</div>

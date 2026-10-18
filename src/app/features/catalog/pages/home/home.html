@@ -1,0 +1,212 @@
+<!-- ===== Hero ===== -->
+<section class="home-hero" id="home">
+  <span class="home-bg home-bg--one" aria-hidden="true"></span>
+  <span class="home-bg home-bg--two" aria-hidden="true"></span>
+
+  <div class="home-container home-hero__grid">
+    <div class="home-hero__copy">
+      <span class="home-pill">SISTEM INVENTARIS DIGITAL</span>
+      <h1>
+        <span>Kelola Inventaris Barang </span>
+        <span>Dengan Lebih</span>
+        <span class="home-accent">Mudah & Terstruktur</span>
+      </h1>
+
+      <p class="home-hero__lead">
+        Kelola data barang,  dan temukan informasi yang dibutuhkan dengan lebih mudah melalui Sistem Inventaris.
+      </p>
+
+      <div class="home-hero__ctas">
+        <a routerLink="/katalog" class="home-btn home-btn--primary">
+          Mulai Sekarang
+          <span class="home-btn__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+        </a>
+        <a href="#fitur" class="home-btn home-btn--outline">
+          Pelajari Fitur
+          <span class="home-btn__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+        </a>
+      </div>
+
+      <ul class="home-chips">
+        @for (chip of heroChips; track chip.title) {
+          <li class="home-chip">
+            <span class="home-chip__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons[chip.icon]" /></svg></span>
+            <span class="home-chip__text"><strong>{{ chip.title }}</strong>{{ chip.sub }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- Pratinjau dashboard (tampilan saja, angka contoh) -->
+    <div class="home-visual" aria-label="Pratinjau dashboard inventaris">
+      <div class="home-visual__glow" aria-hidden="true"></div>
+
+      <div class="home-float home-float--chip">
+        <span class="home-float__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.plus" /></svg></span>
+        +12 Barang Baru
+      </div>
+
+      <div class="home-dash">
+        <div class="home-dash__top">
+          <p>Dashboard Inventaris</p>
+          <div class="home-dash__dots"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="home-dash__grid">
+          <div class="home-dash__card"><p>Total Barang</p><b>1.248</b></div>
+          <div class="home-dash__card"><p>Barang Tersedia</p><b>982</b></div>
+          <div class="home-dash__card"><p>Barang Dipinjam</p><b>266</b></div>
+          <div class="home-dash__card"><p>Transaksi</p><b>524</b></div>
+        </div>
+
+        <div class="home-dash__chart">
+          <p>Grafik Stok Barang</p>
+          <svg viewBox="0 0 300 70" role="img" aria-label="Grafik stok barang meningkat" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="home-chart-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity=".25" />
+                <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path d="M0,55 L35,45 L70,50 L105,28 L140,35 L175,15 L210,25 L245,10 L280,18 L280,70 L0,70 Z" fill="url(#home-chart-fill)" stroke="none" />
+            <polyline fill="none" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" points="0,55 35,45 70,50 105,28 140,35 175,15 210,25 245,10 280,18" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="home-float home-float--donut">
+        <span class="home-donut"><span class="home-donut__hole">79%</span></span>
+        <span class="home-float__text"><strong>Ketersediaan</strong>Barang siap dipinjam</span>
+      </div>
+
+      <div class="home-float home-float--bars">
+        <span class="home-float__text"><strong>266</strong>Barang dipinjam</span>
+        <span class="home-bars" aria-hidden="true">
+          <i style="height: 30%"></i><i style="height: 45%"></i><i style="height: 38%"></i><i style="height: 62%"></i><i style="height: 55%"></i><i style="height: 85%"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Ringkasan sistem ===== -->
+<section class="home-strip" aria-label="Statistik inventaris">
+  <div class="home-container">
+    <div class="home-strip__card">
+      <p class="home-strip__label">RINGKASAN SISTEM</p>
+      <div class="home-strip__grid">
+        @for (stat of stats; track stat.label) {
+          <div class="home-stat">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Fitur ===== -->
+<section class="home-section" id="fitur">
+  <div class="home-container">
+    <header class="home-head">
+      <span class="home-kicker">FITUR SISTEM</span>
+      <h2>Semua yang Dibutuhkan untuk Mengelola Inventaris</h2>
+      <p>Kelola berbagai kebutuhan inventaris melalui sistem yang sederhana, cepat, dan terstruktur.</p>
+    </header>
+
+    <div class="home-features">
+      @for (item of whyInventory; track item.title) {
+        <article class="home-feature">
+          <span class="home-feature__icon" [class]="'home-feature__icon tone-' + item.tone">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons[item.icon]" /></svg>
+          </span>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+          <a [routerLink]="item.link" class="home-more">
+            Selengkapnya
+            <span class="home-more__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+          </a>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ===== Barang tersedia ===== -->
+<section class="home-section home-section--tight" id="barang">
+  <div class="home-container">
+    <div class="home-head home-head--row">
+      <div>
+        <span class="home-kicker">KATALOG BARANG</span>
+        <h2>Barang yang Bisa Anda Pinjam</h2>
+      </div>
+      <a routerLink="/katalog" class="home-more home-more--right">
+        Lihat Semua Barang
+        <span class="home-more__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+      </a>
+    </div>
+
+    <div class="home-items">
+      @for (item of facilities; track item.id) {
+        <article class="home-item">
+          <div class="home-item__photo">
+            <img [src]="item.image" [alt]="item.name" loading="lazy" />
+            <span class="home-item__status" [class.is-borrowed]="item.status === 'Dipinjam'">{{ item.status }}</span>
+          </div>
+          <div class="home-item__body">
+            <span class="home-item__cat">{{ item.category }}</span>
+            <h3>{{ item.name }}</h3>
+            <p class="home-item__code">{{ item.code }}</p>
+            <p class="home-item__loc">
+              <svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg>
+              {{ item.location }}
+            </p>
+            <a [routerLink]="['/katalog', item.id]" class="home-btn home-btn--soft">Lihat Detail</a>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ===== Cara kerja ===== -->
+<section class="home-section" id="cara-kerja">
+  <div class="home-container">
+    <header class="home-head">
+      <span class="home-kicker">SINGKAT DAN TERSTRUKTUR</span>
+      <h2>Bagaimana Sistem Ini Bekerja?</h2>
+      <p>Alur peminjaman barang dari memilih hingga mengembalikan.</p>
+    </header>
+
+    <div class="home-steps">
+      @for (step of borrowingSteps; track step.title; let i = $index) {
+        <article class="home-step">
+          <span class="home-step__circle">
+            <svg viewBox="0 0 24 24"><path [attr.d]="icons[step.icon]" /></svg>
+            <span class="home-step__num">{{ i + 1 }}</span>
+          </span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ===== Banner ajakan ===== -->
+<section class="home-section home-section--cta">
+  <div class="home-container">
+    <div class="home-cta">
+      <span class="home-cta__target" aria-hidden="true"></span>
+      <div class="home-cta__text">
+        <h2>Siap Mengelola Inventaris dengan Lebih Efisien?</h2>
+        <p>Gunakan sistem inventaris yang sederhana, modern, dan terstruktur.</p>
+      </div>
+      <a routerLink="/katalog" class="home-btn home-btn--white">
+        Masuk ke Sistem
+        <span class="home-btn__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+      </a>
+    </div>
+  </div>
+</section>

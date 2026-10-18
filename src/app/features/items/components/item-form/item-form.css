@@ -1,0 +1,112 @@
+:host {
+  /* Warna aksen form (saat ini hijau). Untuk tema biru ganti ketiganya: #2563eb, #1d4ed8, #e0ecff */
+  --accent: #059669;
+  --accent-dark: #047857;
+  --accent-soft: #d1fae5;
+  --focus: #10b981;
+  display: block;
+  color: #0f172a;
+}
+svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+.item-form { display: flex; flex-direction: column; gap: 1.25rem; max-width: 66rem; }
+.item-form__layout { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 1.25rem; align-items: start; }
+.item-form__main { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.item-form__side { position: sticky; top: 1rem; }
+
+/* Kartu bagian */
+.item-form__card { background: #fff; border: 1px solid #eef2f7; border-radius: 1rem; box-shadow: 0 2px 8px rgba(15,23,42,.04); }
+.item-form__card-head { display: flex; align-items: center; gap: .9rem; padding: 1.05rem 1.35rem; border-bottom: 1px solid #f1f5f9; }
+.item-form__card-head h2 { margin: 0; font-size: .95rem; font-weight: 800; }
+.item-form__card-head p { margin: .1rem 0 0; color: #64748b; font-size: .76rem; }
+.item-form__card-icon { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; flex: none; color: var(--accent); background: var(--accent-soft); border-radius: .75rem; }
+.item-form__card-icon svg { width: 1.1rem; height: 1.1rem; }
+.item-form__card-body { padding: 1.25rem 1.35rem 1.4rem; }
+.item-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem 1.25rem; }
+
+/* Kolom */
+.item-form__field { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.item-form__field--full { grid-column: 1 / -1; }
+.item-form__field label, .item-form__label { color: #334155; font-size: .8rem; font-weight: 700; }
+.item-form__field label small { color: #94a3b8; font-size: .7rem; font-weight: 500; }
+
+.item-form__field input:not([type='radio']):not([type='file']),
+.item-form__field select,
+.item-form__field textarea { width: 100%; box-sizing: border-box; padding: .7rem .85rem; color: #0f172a; background: #fff; border: 1px solid #e2e8f0; border-radius: .7rem; font: inherit; font-size: .88rem; transition: border-color .15s, box-shadow .15s; }
+.item-form__field input::placeholder, .item-form__field textarea::placeholder { color: #94a3b8; }
+.item-form__field input:focus, .item-form__field select:focus, .item-form__field textarea:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
+.item-form__field select { appearance: none; padding-right: 2.25rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; }
+.item-form__field textarea { min-height: 6rem; resize: vertical; }
+.item-form__field.is-invalid input { border-color: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,.12); }
+.item-form__error { margin: 0; color: #dc2626; font-size: .76rem; font-weight: 600; }
+.item-form__hint { margin: 0; color: #94a3b8; font-size: .76rem; }
+
+/* Harga dengan awalan Rp */
+.item-form__prefix { position: relative; }
+.item-form__prefix span { position: absolute; top: 50%; left: .85rem; transform: translateY(-50%); color: #64748b; font-size: .82rem; font-weight: 700; pointer-events: none; }
+.item-form__prefix input { padding-left: 2.5rem !important; }
+
+/* Pilihan kondisi */
+.item-form__conditions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.item-form__condition { position: relative; cursor: pointer; }
+.item-form__condition input { position: absolute; opacity: 0; pointer-events: none; }
+.item-form__condition-box { display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.8rem; padding: .5rem; color: #475569; background: #fff; border: 1.5px solid #e2e8f0; border-radius: .75rem; font-size: .8rem; font-weight: 700; text-align: center; transition: border-color .15s, background .15s, color .15s, box-shadow .15s; }
+.item-form__condition-box i { width: .6rem; height: .6rem; flex: none; border-radius: 50%; background: currentColor; opacity: .55; }
+.item-form__condition:hover .item-form__condition-box { border-color: #cbd5e1; }
+.item-form__condition input:checked + .tone-ok { color: #047857; background: #ecfdf5; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.14); }
+.item-form__condition input:checked + .tone-warn { color: #b45309; background: #fffbeb; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.16); }
+.item-form__condition input:checked + .tone-bad { color: #b91c1c; background: #fef2f2; border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.14); }
+.item-form__condition input:checked + .item-form__condition-box i { opacity: 1; }
+.item-form__condition input:focus-visible + .item-form__condition-box { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Foto */
+.item-photo__preview { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; overflow: hidden; background: #f8faff; border: 1.5px dashed #cbd5e1; border-radius: .9rem; }
+.item-photo__preview.has-image { border-style: solid; border-color: #e2e8f0; }
+.item-photo__image { display: block; width: 100%; height: 100%; object-fit: cover; }
+.item-photo__placeholder { display: flex; flex-direction: column; align-items: center; gap: .5rem; color: #94a3b8; font-size: .76rem; }
+.item-photo__placeholder svg { width: 2rem; height: 2rem; stroke-width: 1.5; }
+.item-photo__loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: .55rem; color: #475569; background: rgba(255,255,255,.82); font-size: .8rem; font-weight: 700; }
+.item-photo__buttons { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: .9rem; }
+.item-photo__upload { position: relative; display: inline-flex; align-items: center; gap: .45rem; padding: .6rem 1rem; color: var(--accent); background: var(--accent-soft); border-radius: .7rem; font-size: .8rem; font-weight: 700; cursor: pointer; transition: filter .15s; }
+.item-photo__upload:hover:not(.is-busy) { filter: brightness(.96); }
+.item-photo__upload.is-busy { opacity: .6; cursor: default; }
+.item-photo__upload:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.item-photo__input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.item-photo__remove { padding: .6rem .8rem; color: #dc2626; background: transparent; border: 0; border-radius: .7rem; font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; transition: background .15s; }
+.item-photo__remove:hover:not(:disabled) { background: #fef2f2; }
+.item-photo__remove:disabled { opacity: .5; cursor: not-allowed; }
+.item-photo .item-form__error { margin-top: .6rem; }
+
+/* Tombol aksi */
+.item-form__actions { display: flex; align-items: center; justify-content: flex-end; gap: .75rem; padding: 1rem 1.25rem; background: #fff; border: 1px solid #eef2f7; border-radius: 1rem; box-shadow: 0 2px 8px rgba(15,23,42,.04); }
+.item-form__submit { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.7rem; padding: 0 1.5rem; color: #fff; background: var(--accent); border: 0; border-radius: .75rem; box-shadow: 0 8px 16px -10px var(--accent); font: inherit; font-size: .86rem; font-weight: 700; cursor: pointer; transition: background .15s, transform .15s, opacity .15s; }
+.item-form__submit:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-1px); }
+.item-form__submit:disabled { opacity: .6; cursor: not-allowed; }
+.item-form__submit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.item-form__cancel { display: inline-flex; align-items: center; justify-content: center; min-height: 2.7rem; padding: 0 1.3rem; color: #475569; background: #fff; border: 1px solid #e2e8f0; border-radius: .75rem; font-size: .86rem; font-weight: 700; text-decoration: none; transition: background .15s, color .15s; }
+.item-form__cancel:hover { color: #0f172a; background: #f8fafc; }
+.item-form__cancel:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
+.item-form__cancel[aria-disabled='true'] { opacity: .5; pointer-events: none; }
+
+.item-form__spinner { display: inline-block; width: .9rem; height: .9rem; flex: none; border: 2px solid rgba(100,116,139,.25); border-top-color: #64748b; border-radius: 9999px; animation: item-form-spin .6s linear infinite; }
+.item-form__submit .item-form__spinner { border-color: rgba(255,255,255,.4); border-top-color: #fff; }
+@keyframes item-form-spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .item-form__layout { grid-template-columns: 1fr; }
+  .item-form__side { position: static; order: -1; }
+  .item-photo__preview { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 640px) {
+  .item-form__grid { grid-template-columns: 1fr; }
+  .item-form__conditions { grid-template-columns: 1fr; }
+  .item-form__card-head, .item-form__card-body { padding-inline: 1rem; }
+}
+@media (max-width: 480px) {
+  .item-form__actions { flex-direction: column-reverse; align-items: stretch; }
+  .item-form__submit, .item-form__cancel { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .item-form__spinner { animation: none; }
+}

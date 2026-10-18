@@ -1,0 +1,46 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="category-form">
+  <div class="category-form__field">
+    <label for="name" class="category-form__label">Nama Kategori</label>
+    <input
+      id="name"
+      formControlName="name"
+      class="category-form__input"
+      [class.category-form__input--error]="form.controls.name.touched && form.controls.name.invalid"
+      placeholder="mis. Kamera & Lensa"
+    />
+    @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+      <p class="category-form__error">Nama wajib diisi.</p>
+    }
+    @if (form.controls.name.touched && form.controls.name.hasError('duplicateName')) {
+      <p class="category-form__error">Nama kategori sudah dipakai.</p>
+    }
+  </div>
+
+  <div class="category-form__field">
+    <label for="description" class="category-form__label">Deskripsi</label>
+    <textarea
+      id="description"
+      formControlName="description"
+      rows="3"
+      class="category-form__textarea"
+      placeholder="Opsional — jelaskan singkat kategori ini"
+    ></textarea>
+  </div>
+
+  <div class="category-form__actions">
+    <button type="submit" [disabled]="isSaving()" class="category-form__submit">
+      @if (isSaving()) {
+        <span class="category-form__spinner" aria-hidden="true"></span>
+      }
+      {{ isSaving() ? 'Menyimpan...' : 'Simpan' }}
+    </button>
+    <a
+      routerLink="/categories"
+      class="category-form__cancel"
+      [attr.aria-disabled]="isSaving() ? 'true' : null"
+      (click)="isSaving() && $event.preventDefault()"
+    >
+      Batal
+    </a>
+  </div>
+</form>

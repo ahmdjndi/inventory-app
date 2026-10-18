@@ -1,0 +1,169 @@
+<div class="public-shell">
+
+  @if (!pageChromeService.hideChrome()) {
+  <!-- Strip info kontak -->
+  <div class="public-contact">
+    <div class="public-container public-contact__inner">
+      <div class="public-contact__info">
+        <span>
+          <svg viewBox="0 0 24 24"><path d="M2.25 6.75c0 8.284 6.716 15 15 15h1.5a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a2.25 2.25 0 00-2.11.573l-.943.944a1.5 1.5 0 01-1.928.164 15.03 15.03 0 01-4.29-4.29 1.5 1.5 0 01.164-1.928l.944-.943a2.25 2.25 0 00.573-2.11L6.963 3.102a1.5 1.5 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+          (0331) 876253xx
+        </span>
+        <span>
+          <svg viewBox="0 0 24 24"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+          inventory&#64;gmail.com
+        </span>
+      </div>
+      <span class="public-contact__date">{{ currentDateTime() }}</span>
+    </div>
+  </div>
+
+  <!-- Navbar utama -->
+  <header class="public-header print:hidden">
+    <nav class="public-container public-bar" aria-label="Navigasi utama">
+      <a routerLink="/" (click)="closeMobileMenu()" class="public-logo">
+  <img
+    src="/Logo 2.png"
+    alt="Logo Inventaris Barang"
+    class="public-logo__image"
+  />
+</a>
+
+      <ul class="public-nav">
+        @for (link of navLinks; track link.path) {
+          <li>
+            <a [routerLink]="link.path" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: !!link.exact }">
+              {{ link.label }}
+              @if (link.cart && cartService.totalItems() > 0) {
+                <span class="public-cart-count">{{ cartService.totalItems() }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="public-actions">
+        <a
+          [routerLink]="authService.isLoggedIn ? '/dashboard' : '/login'"
+          (click)="closeMobileMenu()"
+          class="public-cta"
+        >
+          {{ authService.isLoggedIn ? 'Dashboard' : 'Login' }}
+          <span class="public-cta__arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </span>
+        </a>
+
+        <button
+          type="button"
+          class="public-menu-button"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-controls="mobile-nav"
+          (click)="toggleMobileMenu()"
+        >
+          <span class="sr-only">Buka menu navigasi</span>
+          @if (!mobileMenuOpen()) {
+            <svg viewBox="0 0 24 24"><path d="M4 6.75h16M4 12h16M4 17.25h16" /></svg>
+          } @else {
+            <svg viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>
+          }
+        </button>
+      </div>
+    </nav>
+
+    <!-- Panel menu mobile -->
+    @if (mobileMenuOpen()) {
+      <div id="mobile-nav" class="public-mobile-nav">
+        <div class="public-container public-mobile-nav__inner">
+          @for (link of navLinks; track link.path) {
+            <a
+              [routerLink]="link.path"
+              (click)="closeMobileMenu()"
+              routerLinkActive="is-active"
+              [routerLinkActiveOptions]="{ exact: !!link.exact }"
+              class="public-mobile-nav__link"
+            >
+              <span>{{ link.label }}</span>
+              @if (link.cart && cartService.totalItems() > 0) {
+                <span class="public-cart-count">{{ cartService.totalItems() }}</span>
+              }
+            </a>
+          }
+          <a
+            [routerLink]="authService.isLoggedIn ? '/dashboard' : '/login'"
+            (click)="closeMobileMenu()"
+            class="public-cta public-cta--block"
+          >
+            {{ authService.isLoggedIn ? 'Dashboard' : 'Login' }}
+            <span class="public-cta__arrow">
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    }
+  </header>
+
+  }
+
+  <main class="public-main">
+    <router-outlet />
+  </main>
+
+    @if (!pageChromeService.hideChrome()) {
+  <!-- Footer -->
+  <footer class="public-footer print:hidden">
+    <div class="public-container public-footer__grid">
+
+      <div class="public-footer__brand">
+        <a routerLink="/" class="public-logo">
+          <span class="public-logo__mark">
+            <svg viewBox="0 0 24 24"><path d="M2 5.5A1.5 1.5 0 013.5 4H9a3 3 0 013 3v13a2.5 2.5 0 00-2.5-2.5H3.5A1.5 1.5 0 012 16V5.5z"/><path d="M22 5.5A1.5 1.5 0 0020.5 4H15a3 3 0 00-3 3v13a2.5 2.5 0 012.5-2.5h6a1.5 1.5 0 001.5-1.5V5.5z"/></svg>
+          </span>
+          <span class="public-logo__text">
+            <strong>Inventaris Barang</strong>
+            <small>Jurusan DKV</small>
+          </span>
+        </a>
+        <p>Sistem inventaris Jurusan DKV untuk melihat daftar barang dan mengajukan peminjaman dengan mudah.</p>
+      </div>
+
+      <div class="public-footer__col">
+        <h3>Menu</h3>
+        <ul>
+          @for (link of navLinks; track link.path) {
+            <li><a [routerLink]="link.path">{{ link.label }}</a></li>
+          }
+          <li>
+            <a [routerLink]="authService.isLoggedIn ? '/dashboard' : '/login'">
+              {{ authService.isLoggedIn ? 'Dashboard' : 'Login' }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="public-footer__col">
+        <h3>Kontak</h3>
+        <ul class="public-footer__contact">
+          <li>
+            <svg viewBox="0 0 24 24"><path d="M2.25 6.75c0 8.284 6.716 15 15 15h1.5a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a2.25 2.25 0 00-2.11.573l-.943.944a1.5 1.5 0 01-1.928.164 15.03 15.03 0 01-4.29-4.29 1.5 1.5 0 01.164-1.928l.944-.943a2.25 2.25 0 00.573-2.11L6.963 3.102a1.5 1.5 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
+            (0331) 876253xx
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+            inventory&#64;gmail.com
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1116 0z M12 7.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" /></svg>
+            Jurusan DKV
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="public-footer__bottom">
+      &copy; {{ currentYear }} Inventaris Barang — Jurusan DKV. Seluruh hak dilindungi.
+    </div>
+  </footer>
+  }
+</div>

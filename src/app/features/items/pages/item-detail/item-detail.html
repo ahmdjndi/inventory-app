@@ -1,0 +1,33 @@
+@if (item(); as it) {
+  <div class="bg-white rounded-lg shadow-sm p-6 max-w-xl">
+    <div class="flex justify-between items-start mb-4">
+      <h2 class="text-lg font-semibold text-gray-800">{{ it.name }}</h2>
+      <a [routerLink]="['/items', it.id, 'edit']" class="text-sm text-blue-600 hover:underline">Ubah</a>
+    </div>
+    <dl class="grid grid-cols-2 gap-y-2 text-sm">
+      <dt class="text-gray-500">Kode</dt><dd>{{ it.code }}</dd>
+      <dt class="text-gray-500">Kategori</dt><dd>{{ it.category_name ?? '-' }}</dd>
+      <dt class="text-gray-500">Lokasi</dt><dd>{{ it.location_name ?? '-' }}</dd>
+      <dt class="text-gray-500">Stok</dt>
+<dd>
+  {{ it.stock }} {{ it.unit }}
+  @if (it.stock === 0) {
+    <span class="ml-1 text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">Habis</span>
+  }
+</dd>
+      <dt class="text-gray-500">Kondisi</dt><dd class="capitalize">{{ it.condition.replace('_', ' ') }}</dd>
+      <dt class="text-gray-500">Harga</dt><dd>{{ it.price ?? '-' }}</dd>
+      <dt class="text-gray-500">Tanggal Beli</dt><dd>{{ it.purchase_date ?? '-' }}</dd>
+      <dt class="text-gray-500">Deskripsi</dt><dd>{{ it.description ?? '-' }}</dd>
+      <dt class="text-gray-500">Foto</dt>
+      <dd>
+        @if (it.photo_url) {
+          <img [src]="it.photo_url" [alt]="it.name" class="w-24 h-24 object-cover rounded-md" />
+        } @else {
+          <span class="text-gray-400">-</span>
+        }
+</dd>
+    </dl>
+    <a routerLink="/items" class="inline-block mt-4 text-sm text-gray-500 hover:underline">&larr; Kembali</a>
+  </div>
+}

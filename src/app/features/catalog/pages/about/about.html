@@ -1,0 +1,230 @@
+<main class="ab-page">
+
+  <!-- ===== Hero ===== -->
+  <section class="ab-hero">
+    <span class="ab-bg ab-bg--one" aria-hidden="true"></span>
+    <span class="ab-bg ab-bg--two" aria-hidden="true"></span>
+
+    <div class="ab-wrap ab-hero__grid">
+      <div class="ab-hero__copy">
+        <span class="ab-kicker">TENTANG INVENTARIS BARANG</span>
+        <h1>Tentang <span class="ab-accent">Inventaris Barang</span></h1>
+        <p>Sistem digital untuk membuat pengelolaan inventaris menjadi lebih mudah, terstruktur, dan efisien.</p>
+        <div class="ab-actions">
+          <a routerLink="/katalog" class="ab-btn ab-btn--primary">
+            Lihat Daftar Barang
+            <span class="ab-btn__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+          </a>
+          <a routerLink="/pinjam" class="ab-btn ab-btn--outline">Ajukan Peminjaman</a>
+        </div>
+      </div>
+
+      <div class="ab-visual" aria-hidden="true">
+        <div class="ab-visual__glow"></div>
+        <div class="ab-dash">
+          <div class="ab-dash__row"><span>Status Barang</span><span>Minggu ini</span></div>
+          <div class="ab-dash__bars">
+            <i style="height: 35%"></i><i style="height: 60%"></i><i style="height: 45%"></i><i style="height: 80%"></i><i style="height: 55%"></i><i style="height: 70%"></i>
+          </div>
+          <div class="ab-dash__row"><span>Katalog barang &amp; pengajuan</span><b>Terkelola</b></div>
+        </div>
+        <div class="ab-float"><span>Pengajuan Terbaru</span><b><i></i>Menunggu Persetujuan</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Statistik ===== -->
+  <section class="ab-wrap ab-stats" aria-label="Statistik">
+    @for (s of stats; track s.label) {
+      <div class="ab-stat">
+        <span class="ab-stat__icon" [class]="'ab-stat__icon tone-' + s.tone">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons[s.icon]" /></svg>
+        </span>
+        <div>
+          <strong>{{ s.value }}</strong>
+          <span>{{ s.label }}</span>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- ===== Tentang sistem ===== -->
+  <section class="ab-wrap ab-section" aria-labelledby="ab-system-title">
+    <div class="ab-system">
+      <div class="ab-system__copy">
+        <span class="ab-kicker">PLATFORM INVENTARIS</span>
+        <h2 id="ab-system-title">Tentang Sistem</h2>
+        <p><strong>Inventaris Barang</strong> merupakan sistem informasi yang dirancang untuk membantu proses pengelolaan dan pemantauan barang secara digital.</p>
+        <p>Sistem ini memungkinkan pengguna melihat informasi barang, mengetahui ketersediaan barang, dan mengajukan peminjaman dengan lebih mudah, tanpa proses pencatatan manual.</p>
+      </div>
+
+      <div class="ab-summary">
+        <h3>Ringkasan Sistem</h3>
+        @for (row of summaryRows; track row.label; let i = $index) {
+          <div class="ab-summary__row">
+            <span class="ab-summary__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons[row.icon]" /></svg></span>
+            <span>{{ row.label }}</span>
+            <b>{{ (i + 1).toString().padStart(2, '0') }}</b>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Tujuan ===== -->
+  <section class="ab-wrap ab-section" aria-labelledby="ab-goals-title">
+    <header class="ab-head">
+      <span class="ab-kicker">ARAH PENGEMBANGAN</span>
+      <h2 id="ab-goals-title">Tujuan Kami</h2>
+      <p>Empat hal yang ingin dicapai sistem ini bagi pengelolaan inventaris.</p>
+    </header>
+    <div class="ab-grid ab-grid--4">
+      @for (g of goals; track g.title; let i = $index) {
+        <article class="ab-card">
+          <span class="ab-card__num">{{ (i + 1).toString().padStart(2, '0') }}</span>
+          <h3>{{ g.title }}</h3>
+          <p>{{ g.text }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ===== Manfaat ===== -->
+  <section class="ab-wrap ab-section" aria-labelledby="ab-benefits-title">
+    <header class="ab-head">
+      <span class="ab-kicker">MANFAAT</span>
+      <h2 id="ab-benefits-title">Mengapa Menggunakan Sistem Ini?</h2>
+      <p>Beberapa manfaat yang dirasakan langsung oleh pengguna.</p>
+    </header>
+    <div class="ab-grid ab-grid--3">
+      @for (b of benefits; track b.title) {
+        <article class="ab-card">
+          <span class="ab-card__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons[b.icon]" /></svg></span>
+          <h3>{{ b.title }}</h3>
+          <p>{{ b.text }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ===== Cara kerja ===== -->
+  <section class="ab-wrap ab-section" aria-labelledby="ab-steps-title">
+    <header class="ab-head ab-head--center">
+      <span class="ab-kicker">CARA KERJA</span>
+      <h2 id="ab-steps-title">Bagaimana Sistem Ini Digunakan?</h2>
+      <p>Empat langkah sederhana dari mencari barang hingga pengajuan diproses.</p>
+    </header>
+    <div class="ab-steps">
+      @for (s of steps; track s.title; let i = $index) {
+        <article class="ab-step">
+          <span class="ab-step__num">{{ i + 1 }}</span>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ===== Struktur organisasi ===== -->
+  <section class="ab-wrap ab-section" aria-labelledby="ab-org-title">
+    <header class="ab-head ab-head--center">
+      <span class="ab-kicker">STRUKTUR ORGANISASI</span>
+      <h2 id="ab-org-title">Pengelola Jurusan</h2>
+      <p>Pihak-pihak yang terlibat dalam pengelolaan inventaris jurusan.</p>
+    </header>
+
+    <div class="ab-org">
+      <div class="ab-node ab-node--top">
+        <span class="ab-node__avatar"><svg viewBox="0 0 24 24"><path [attr.d]="icons.user" /></svg></span>
+        <strong>{{ orgTop.role }}</strong>
+        <span>{{ orgTop.name }}</span>
+      </div>
+
+      <div class="ab-org__link" aria-hidden="true"></div>
+
+      <ul class="ab-org__row">
+        @for (n of orgChildren; track n.role) {
+          <li class="ab-node">
+            <span class="ab-node__avatar"><svg viewBox="0 0 24 24"><path [attr.d]="icons.user" /></svg></span>
+            <strong>{{ n.role }}</strong>
+            <span>{{ n.name }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="ab-org__link" aria-hidden="true"></div>
+
+      <div class="ab-node ab-node--bottom">
+        <span class="ab-node__avatar"><svg viewBox="0 0 24 24"><path [attr.d]="icons.user" /></svg></span>
+        <strong>{{ orgBottom.role }}</strong>
+        <span>{{ orgBottom.name }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Kontak & lokasi ===== -->
+  <section class="ab-wrap ab-section" aria-labelledby="ab-contact-title">
+    <header class="ab-head ab-head--center">
+      <span class="ab-kicker">KONTAK &amp; LOKASI</span>
+      <h2 id="ab-contact-title">Hubungi Kami</h2>
+      <p>Informasi kontak dan lokasi sekolah.</p>
+    </header>
+
+    <div class="ab-contact">
+      <ul class="ab-contact__list">
+        <li>
+          <span class="ab-contact__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.pin" /></svg></span>
+          <div><small>Alamat</small><p>{{ schoolInfo.address }}</p></div>
+        </li>
+        <li>
+          <span class="ab-contact__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.phone" /></svg></span>
+          <div><small>Telepon</small><p>{{ schoolInfo.phone }}</p></div>
+        </li>
+        <li>
+          <span class="ab-contact__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.mail" /></svg></span>
+          <div><small>Email</small><p><a [href]="'mailto:' + schoolInfo.email">{{ schoolInfo.email }}</a></p></div>
+        </li>
+        <li>
+          <span class="ab-contact__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons.globe" /></svg></span>
+          <div><small>Website</small><p><a [href]="'https://' + schoolInfo.website" target="_blank" rel="noopener noreferrer">{{ schoolInfo.website }}</a></p></div>
+        </li>
+      </ul>
+
+      <div class="ab-map">
+        <iframe
+          [src]="mapUrl"
+          title="Peta lokasi sekolah"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Visi & ajakan ===== -->
+  <section class="ab-wrap ab-section">
+    <div class="ab-vision">
+      <span class="ab-kicker">VISI</span>
+      <h2>Membangun Pengelolaan Inventaris yang Lebih Baik</h2>
+      <p>Dengan memanfaatkan teknologi digital, proses pengelolaan inventaris dapat dilakukan dengan lebih terstruktur, mudah diakses, dan efisien.</p>
+    </div>
+  </section>
+
+  <section class="ab-wrap ab-section ab-section--last">
+    <div class="ab-cta">
+      <span class="ab-cta__target" aria-hidden="true"></span>
+      <div class="ab-cta__text">
+        <h2>Temukan Barang yang Anda Butuhkan</h2>
+        <p>Jelajahi daftar inventaris dan temukan barang yang tersedia untuk kebutuhan Anda.</p>
+      </div>
+      <div class="ab-cta__actions">
+        <a routerLink="/katalog" class="ab-btn ab-btn--white">
+          Lihat Daftar Barang
+          <span class="ab-btn__arrow"><svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow" /></svg></span>
+        </a>
+        <a routerLink="/pinjam" class="ab-btn ab-btn--ghost">Ajukan Peminjaman</a>
+      </div>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,65 @@
+<div class="bg-white rounded-lg shadow-sm p-6">
+  <h2 class="text-lg font-semibold text-gray-800 mb-2">Pengguna</h2>
+  <p class="text-xs text-gray-400 mb-4">
+    Menambah akun baru dilakukan lewat Supabase Dashboard (Authentication → Add User).
+    Akun baru otomatis berperan "petugas" — naikkan jadi "admin" di sini bila perlu.
+  </p>
+
+  @if (errorMessage()) {
+    <p class="text-sm text-red-600 mb-4">{{ errorMessage() }}</p>
+  }
+
+  @if (isLoading()) {
+    <p class="text-gray-500">Memuat data...</p>
+  } @else {
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-gray-500 border-b">
+          <th class="py-2">Nama</th>
+          <th class="py-2">Email</th>
+          <th class="py-2">Role</th>
+          <th class="py-2">Bergabung</th>
+          <th class="py-2">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (admin of admins(); track admin.id) {
+          <tr class="border-b last:border-0">
+            @if (editingId() === admin.id) {
+              <td class="py-2" colspan="2">
+                <input [value]="editName()" (input)="editName.set($any($event.target).value)"
+                       class="w-full border border-gray-300 rounded-md px-2 py-1" />
+              </td>
+            } @else {
+              <td class="py-2">
+                {{ admin.full_name }}
+                @if (isSelf(admin)) { <span class="text-xs text-gray-400">(Anda)</span> }
+              </td>
+              <td class="py-2">{{ admin.email }}</td>
+            }
+            <td class="py-2">
+              <select [value]="admin.role" [disabled]="isSelf(admin)"
+                      (change)="onRoleChange(admin, $any($event.target).value)"
+                      class="border border-gray-300 rounded-md px-2 py-1 text-xs disabled:opacity-50">
+                <option value="admin">Admin</option>
+                <option value="petugas">Petugas</option>
+              </select>
+            </td>
+            <td class="py-2 text-gray-400">{{ admin.created_at | date: 'dd MMM yyyy' }}</td>
+            <td class="py-2 space-x-2">
+              @if (editingId() === admin.id) {
+                <button (click)="saveEdit(admin.id)" class="text-blue-600 hover:underline">Simpan</button>
+                <button (click)="cancelEdit()" class="text-gray-500 hover:underline">Batal</button>
+              } @else {
+                <button (click)="startEdit(admin)" class="text-amber-600 hover:underline">Ubah Nama</button>
+                @if (!isSelf(admin)) {
+                  <button (click)="onRemove(admin)" class="text-red-600 hover:underline">Hapus</button>
+                }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

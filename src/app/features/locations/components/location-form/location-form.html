@@ -1,0 +1,58 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="location-form" novalidate>
+
+  <section class="location-form__card">
+    <header class="location-form__card-head">
+      <span class="location-form__card-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1116 0z M12 7.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" /></svg>
+      </span>
+      <div>
+        <h2>Informasi Lokasi</h2>
+        <p>Nama dan keterangan tempat penyimpanan barang.</p>
+      </div>
+    </header>
+
+    <div class="location-form__card-body">
+      <div class="location-form__field" [class.is-invalid]="nameInvalid">
+        <label for="name">Nama Lokasi</label>
+        <input id="name" formControlName="name" placeholder="Contoh: Ruang Lab" autocomplete="off" />
+        @if (form.controls.name.pending) {
+          <p class="location-form__hint">Memeriksa nama...</p>
+        }
+        @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+          <p class="location-form__error">Nama wajib diisi.</p>
+        }
+        @if (form.controls.name.touched && form.controls.name.hasError('duplicateName')) {
+          <p class="location-form__error">Nama lokasi sudah dipakai.</p>
+        }
+      </div>
+
+      <div class="location-form__field">
+        <label for="description">Deskripsi <small>(opsional)</small></label>
+        <textarea
+          id="description"
+          formControlName="description"
+          rows="4"
+          placeholder="Contoh: Ruang praktik komputer lantai 2"
+        ></textarea>
+        <p class="location-form__counter">{{ form.controls.description.value.length }} karakter</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="location-form__actions">
+    <a
+      routerLink="/locations"
+      class="location-form__cancel"
+      [attr.aria-disabled]="isSaving() ? 'true' : null"
+      (click)="isSaving() && $event.preventDefault()"
+    >
+      Batal
+    </a>
+    <button type="submit" class="location-form__submit" [disabled]="isSaving() || form.pending">
+      @if (isSaving()) {
+        <span class="location-form__spinner" aria-hidden="true"></span>
+      }
+      {{ isSaving() ? 'Menyimpan...' : (isEditMode() ? 'Simpan Perubahan' : 'Simpan Lokasi') }}
+    </button>
+  </div>
+</form>

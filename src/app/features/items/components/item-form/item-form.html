@@ -1,0 +1,200 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="item-form" novalidate>
+  <div class="item-form__layout">
+
+    <!-- ===== Kolom kiri ===== -->
+    <div class="item-form__main">
+
+      <section class="item-form__card">
+        <header class="item-form__card-head">
+          <span class="item-form__card-icon"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z M3 8l9 5 9-5 M12 13v8" /></svg></span>
+          <div>
+            <h2>Informasi Barang</h2>
+            <p>Identitas barang, kategori, dan lokasi penyimpanan.</p>
+          </div>
+        </header>
+
+        <div class="item-form__card-body item-form__grid">
+          <div class="item-form__field" [class.is-invalid]="isInvalid('code')">
+            <label for="code">Kode Barang</label>
+            <input id="code" formControlName="code" placeholder="Contoh: IT-001" autocomplete="off" />
+            @if (form.controls.code.pending) {
+              <p class="item-form__hint">Memeriksa kode...</p>
+            }
+            @if (form.controls.code.touched && form.controls.code.hasError('required')) {
+              <p class="item-form__error">Kode wajib diisi.</p>
+            }
+            @if (form.controls.code.touched && form.controls.code.hasError('duplicateCode')) {
+              <p class="item-form__error">Kode barang sudah dipakai.</p>
+            }
+          </div>
+
+          <div class="item-form__field" [class.is-invalid]="isInvalid('name')">
+            <label for="name">Nama Barang</label>
+            <input id="name" formControlName="name" placeholder="Contoh: Laptop ASUS" autocomplete="off" />
+            @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+              <p class="item-form__error">Nama wajib diisi.</p>
+            }
+          </div>
+
+          <div class="item-form__field">
+            <label for="category_id">Kategori <small>(opsional)</small></label>
+            <select id="category_id" formControlName="category_id">
+              <option value="">- Pilih Kategori -</option>
+              @for (c of categories(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="item-form__field">
+            <label for="location_id">Lokasi <small>(opsional)</small></label>
+            <select id="location_id" formControlName="location_id">
+              <option value="">- Pilih Lokasi -</option>
+              @for (l of locations(); track l.id) {
+                <option [value]="l.id">{{ l.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="item-form__card">
+        <header class="item-form__card-head">
+          <span class="item-form__card-icon"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 012-2h12a2 2 0 012 2v13a1 1 0 01-1 1H5a1 1 0 01-1-1V7z M4 10h16 M8 3v4 M16 3v4" /></svg></span>
+          <div>
+            <h2>Stok &amp; Kondisi</h2>
+            <p>Jumlah, satuan, kondisi, dan data pembelian.</p>
+          </div>
+        </header>
+
+        <div class="item-form__card-body item-form__grid">
+          <div class="item-form__field" [class.is-invalid]="isInvalid('stock')">
+            <label for="stock">Stok</label>
+            <input id="stock" type="number" min="0" formControlName="stock" />
+            @if (form.controls.stock.touched && form.controls.stock.hasError('required')) {
+              <p class="item-form__error">Stok wajib diisi.</p>
+            }
+            @if (form.controls.stock.touched && form.controls.stock.hasError('min')) {
+              <p class="item-form__error">Stok tidak boleh negatif.</p>
+            }
+          </div>
+
+          <div class="item-form__field" [class.is-invalid]="isInvalid('unit')">
+            <label for="unit">Satuan</label>
+            <input id="unit" formControlName="unit" placeholder="pcs, unit, box" autocomplete="off" />
+            @if (form.controls.unit.touched && form.controls.unit.hasError('required')) {
+              <p class="item-form__error">Satuan wajib diisi.</p>
+            }
+          </div>
+
+          <div class="item-form__field item-form__field--full">
+            <span class="item-form__label">Kondisi</span>
+            <div class="item-form__conditions" role="radiogroup" aria-label="Kondisi barang">
+              @for (c of conditions; track c.value) {
+                <label class="item-form__condition">
+                  <input type="radio" formControlName="condition" [value]="c.value" />
+                  <span [class]="'item-form__condition-box tone-' + c.tone">
+                    <i></i>{{ c.label }}
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div class="item-form__field" [class.is-invalid]="isInvalid('price')">
+            <label for="price">Harga <small>(opsional)</small></label>
+            <div class="item-form__prefix">
+              <span>Rp</span>
+              <input id="price" type="number" min="0" formControlName="price" placeholder="0" />
+            </div>
+            @if (form.controls.price.touched && form.controls.price.hasError('min')) {
+              <p class="item-form__error">Harga tidak boleh negatif.</p>
+            }
+          </div>
+
+          <div class="item-form__field">
+            <label for="purchase_date">Tanggal Pembelian <small>(opsional)</small></label>
+            <input id="purchase_date" type="date" formControlName="purchase_date" />
+          </div>
+        </div>
+      </section>
+
+      <section class="item-form__card">
+        <header class="item-form__card-head">
+          <span class="item-form__card-icon"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z M9 13h6 M9 17h6" /></svg></span>
+          <div>
+            <h2>Deskripsi</h2>
+            <p>Keterangan tambahan tentang barang (opsional).</p>
+          </div>
+        </header>
+        <div class="item-form__card-body">
+          <div class="item-form__field">
+            <textarea id="description" formControlName="description" rows="4" placeholder="Tulis spesifikasi, catatan, atau keterangan lain" aria-label="Deskripsi"></textarea>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== Kolom kanan: foto ===== -->
+    <aside class="item-form__side">
+      <section class="item-form__card item-photo">
+        <header class="item-form__card-head">
+          <span class="item-form__card-icon"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z M12 17a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" /></svg></span>
+          <div>
+            <h2>Foto Barang</h2>
+            <p>Opsional, JPG/PNG maksimal 2MB.</p>
+          </div>
+        </header>
+
+        <div class="item-form__card-body">
+          <div class="item-photo__preview" [class.has-image]="!!form.controls.photo_url.value">
+            @if (form.controls.photo_url.value) {
+              <img [src]="form.controls.photo_url.value" alt="Pratinjau foto barang" class="item-photo__image" />
+            } @else {
+              <span class="item-photo__placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5.5-5.5L4 21" /></svg>
+                Belum ada foto
+              </span>
+            }
+            @if (isUploadingPhoto()) {
+              <span class="item-photo__loading"><span class="item-form__spinner" aria-hidden="true"></span>Mengunggah...</span>
+            }
+          </div>
+
+          <div class="item-photo__buttons">
+            <label class="item-photo__upload" [class.is-busy]="isUploadingPhoto()">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
+              {{ form.controls.photo_url.value ? 'Ganti Foto' : 'Pilih Foto' }}
+              <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="isUploadingPhoto()" class="item-photo__input" />
+            </label>
+            @if (form.controls.photo_url.value) {
+              <button type="button" class="item-photo__remove" (click)="removePhoto()" [disabled]="isUploadingPhoto()">Hapus Foto</button>
+            }
+          </div>
+
+          @if (photoError()) {
+            <p class="item-form__error">{{ photoError() }}</p>
+          }
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Tombol aksi -->
+  <div class="item-form__actions">
+    <a
+      routerLink="/items"
+      class="item-form__cancel"
+      [attr.aria-disabled]="isSaving() ? 'true' : null"
+      (click)="isSaving() && $event.preventDefault()"
+    >
+      Batal
+    </a>
+    <button type="submit" [disabled]="isSaving() || isUploadingPhoto() || form.pending" class="item-form__submit">
+      @if (isSaving()) {
+        <span class="item-form__spinner" aria-hidden="true"></span>
+      }
+      {{ isSaving() ? 'Menyimpan...' : (isEditMode() ? 'Simpan Perubahan' : 'Simpan Barang') }}
+    </button>
+  </div>
+</form>

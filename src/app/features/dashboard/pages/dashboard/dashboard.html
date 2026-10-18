@@ -1,0 +1,252 @@
+<div class="dashboard-page">
+
+  <!-- Header -->
+  <header class="dash-header">
+    <div class="dash-header__left">
+      <span class="dash-header__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons['dashboard']" /></svg></span>
+      <div>
+        <h1 class="dash-header__title">Dashboard</h1>
+        <p class="dash-header__subtitle">Pantau stok, peminjaman, dan aktivitas inventaris.</p>
+      </div>
+    </div>
+    <div class="dash-header__right">
+      <span class="dash-header__date">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons['calendar']" /></svg>
+        {{ todayLabel }}
+      </span>
+      <a routerLink="/items/create" class="dash-header__action">
+        <svg viewBox="0 0 24 24"><path [attr.d]="icons['plus']" /></svg>
+        Tambah Barang
+      </a>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+
+    <div class="stats-grid" aria-label="Memuat ringkasan inventaris">
+      @for (slot of skeletonSlots; track slot) {
+        <div class="stat-skeleton"><span></span><i></i><b></b></div>
+      }
+    </div>
+    <div class="activity-skeleton"><b></b><span></span></div>
+
+  } @else if (errorMessage()) {
+
+    <section class="dash-error">
+      <span class="dash-error__icon"><svg viewBox="0 0 24 24"><path [attr.d]="icons['alert']" /></svg></span>
+      <h2>Data dashboard gagal dimuat</h2>
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="dash-error__btn" (click)="load()">Muat Ulang</button>
+    </section>
+
+  } @else if (stats(); as s) {
+
+    <!-- Pengajuan menunggu konfirmasi -->
+    <section class="pending" [class.is-empty]="s.pendingRequestsCount === 0">
+      <span class="pending__icon">
+        <svg viewBox="0 0 24 24"><path [attr.d]="s.pendingRequestsCount === 0 ? icons['check'] : icons['clock']" /></svg>
+      </span>
+      <div class="pending__text">
+        @if (s.pendingRequestsCount > 0) {
+          <strong>{{ s.pendingRequestsCount }} pengajuan menunggu konfirmasi</strong>
+        } @else {
+          <strong>Tidak ada pengajuan yang menunggu</strong>
+        }
+        <p>Lihat dan proses pengajuan di menu Peminjaman.</p>
+      </div>
+      <a routerLink="/loans" class="pending__link">
+        Lihat Pengajuan <span aria-hidden="true">→</span>
+      </a>
+    </section>
+
+    <!-- Ringkasan stok -->
+    <section aria-labelledby="summary-title">
+      <h2 class="section-title" id="summary-title">Ringkasan Stok</h2>
+
+      <div class="stats-grid">
+        @for (c of cards(); track c.label) {
+          <a class="stat-card" [routerLink]="c.link">
+            <div class="stat-card__top">
+              <span class="stat-card__icon" [class]="'stat-card__icon tone-' + c.tone">
+                <svg viewBox="0 0 24 24"><path [attr.d]="icons[c.icon]" /></svg>
+              </span>
+              <span class="stat-card__chev">
+                <svg viewBox="0 0 24 24"><path [attr.d]="icons['chevron']" /></svg>
+              </span>
+            </div>
+
+            <span class="stat-card__label">{{ c.label }}</span>
+            <strong class="stat-card__value">{{ c.value }}</strong>
+            <small class="stat-card__desc">{{ c.desc }}</small>
+          </a>
+        }
+      </div>
+    </section>
+
+    <!-- Baris 2: grafik + aktivitas -->
+    <div class="row row--2">
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Grafik Stok Barang</h2>
+          <span class="pill">12 Bulan</span>
+        </div>
+
+        @if (chart(); as c) {
+          <svg class="chart" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" role="img" aria-label="Grafik stok barang 12 bulan">
+            <defs>
+              <linearGradient id="dash-area-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" style="stop-color: var(--chart)" stop-opacity=".22" />
+                <stop offset="100%" style="stop-color: var(--chart)" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            @for (t of c.ticks; track t.v) {
+              <line [attr.x1]="c.L" [attr.x2]="c.W - c.R" [attr.y1]="t.y" [attr.y2]="t.y" class="chart__grid" />
+              <text [attr.x]="c.L - 10" [attr.y]="t.y + 3" text-anchor="end" class="chart__text">{{ t.v }}</text>
+            }
+
+            <path [attr.d]="c.area" fill="url(#dash-area-grad)" stroke="none" />
+            <path [attr.d]="c.line" class="chart__line" />
+
+            @for (p of c.pts; track p.label) {
+              <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3.5" class="chart__dot" />
+              <text [attr.x]="p.x" [attr.y]="c.H - 8" text-anchor="middle" class="chart__text">{{ p.label }}</text>
+            }
+          </svg>
+        } @else {
+          <p class="empty">Belum ada data grafik stok.</p>
+        }
+      </section>
+
+      <section class="card" aria-labelledby="activity-title">
+        <div class="card__header">
+          <h2 class="card__title" id="activity-title">Aktivitas Terbaru</h2>
+          <a routerLink="/transactions" class="card__link">Lihat Semua <span aria-hidden="true">→</span></a>
+        </div>
+
+        @if (s.recentActivity.length === 0) {
+          <div class="empty">
+            <strong>Belum ada aktivitas</strong>
+            <p>Aktivitas inventaris akan muncul di sini.</p>
+          </div>
+        } @else {
+          <ul class="activity-list">
+            @for (a of s.recentActivity; track a.id) {
+              <li class="activity-list__item">
+                <span class="act-icon" [class]="'act-icon ' + activityTone(a.description)">
+                  <svg viewBox="0 0 24 24"><path [attr.d]="icons[activityIcon(a.description)]" /></svg>
+                </span>
+
+                <div class="activity-list__text">
+                  <strong>{{ activityTitle(a) }}</strong>
+                  <small>{{ a.description }}</small>
+                </div>
+
+                <span class="activity-list__date">{{ timeAgo(a.date) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <!-- Baris 3: tabel + tabel + donut -->
+    <div class="row row--3">
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Barang Terbaru</h2>
+          <a routerLink="/items" class="card__link">Lihat Semua <span aria-hidden="true">→</span></a>
+        </div>
+
+        @if (s.recentItems?.length) {
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>Nama Barang</th><th>Kategori</th><th>Lokasi</th><th>Tanggal Masuk</th></tr>
+              </thead>
+              <tbody>
+                @for (it of s.recentItems; track it.id) {
+                  <tr>
+                    <td>
+                      <span class="thumb">
+                        @if (it.image) { <img [src]="it.image" [alt]="it.name" /> } @else { {{ it.name.charAt(0) }} }
+                      </span>
+                      {{ it.name }}
+                    </td>
+                    <td class="muted">{{ it.category }}</td>
+                    <td class="muted">{{ it.location }}</td>
+                    <td class="muted">{{ formatDate(it.date) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="empty">Belum ada data barang.</p>
+        }
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Barang Paling Sering Dipinjam</h2>
+          <a routerLink="/loans" class="card__link">Lihat Semua <span aria-hidden="true">→</span></a>
+        </div>
+
+        @if (s.topBorrowed?.length) {
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>Nama Barang</th><th class="right">Jumlah Pinjam</th></tr>
+              </thead>
+              <tbody>
+                @for (b of s.topBorrowed; track b.name) {
+                  <tr>
+                    <td>
+                      <span class="thumb">
+                        @if (b.image) { <img [src]="b.image" [alt]="b.name" /> } @else { {{ b.name.charAt(0) }} }
+                      </span>
+                      {{ b.name }}
+                    </td>
+                    <td class="right"><span class="count">{{ b.count }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="empty">Belum ada data peminjaman.</p>
+        }
+      </section>
+
+      <section class="card">
+        <div class="card__header">
+          <h2 class="card__title">Kategori Barang</h2>
+        </div>
+
+        @if (categories(); as cat) {
+          <div class="donut-wrap">
+            <div class="donut" [style.background]="cat.gradient">
+              <div class="donut__hole">
+                <strong>{{ cat.total }}</strong>
+                <small>Kategori</small>
+              </div>
+            </div>
+
+            <ul class="legend">
+              @for (r of cat.rows; track r.name) {
+                <li>
+                  <i [style.background]="r.color"></i>
+                  <span class="legend__name">{{ r.name }}</span>
+                  <span class="legend__num">{{ r.count }}</span>
+                  <span class="legend__pct">({{ r.pct }}%)</span>
+                </li>
+              }
+            </ul>
+          </div>
+        } @else {
+          <p class="empty">Belum ada data kategori.</p>
+        }
+      </section>
+    </div>
+  }
+</div>
